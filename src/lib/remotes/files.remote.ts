@@ -1,0 +1,245 @@
+import z from 'zod';
+import path, { dirname, join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { writeFile, mkdir, readFile, rm, lstat } from 'node:fs/promises';
+import { move } from 'fs-extra/esm';
+import { error } from '@sveltejs/kit';
+import { command, form, getRequestEvent, query } from '$app/server';
+import { createFileTree } from '$lib';
+import { env } from '$env/dynamic/private';
+import { getRelativePathFromTape, getValidPathInTape, sanitizeFileName } from './files.utils';
+import type { FileEntry, FileTree } from '$types/files';
+import type { EntryModification } from '$types/modification';
+
+const NOTE_DIR = env.NOTE_DIR;
+
+export const getFileTree = query(async (): Promise<FileTree[]> => {
+	const { params } = getRequestEvent();
+	const tape = params.tape;
+	if (!tape) {
+		throw error(400, 'Tape parameter is missing');
+	}
+
+	try {
+		// todo: validate tape to prevent directory traversal attacks
+		const tree = await createFileTree(join(NOTE_DIR, tape));
+		return tree;
+	} catch (err) {
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+			throw error(404, 'Tape not found');
+		}
+		throw error(500, 'Failed to get file tree');
+	}
+});
+
+export const getCurrentTape = query(async (): Promise<string> => {
+	const { params } = getRequestEvent();
+	const tape = params.tape;
+	if (!tape) {
+		throw error(400, 'Tape parameter is missing');
+	}
+	return tape;
+});
+
+
+export const getFileContent = query(z.string(), async (filePath): Promise<string> => {
+	const path = getValidPathInTape(filePath);
+	const file = await readFile(path, {
+		encoding: 'utf-8',
+	});
+	return file;
+});
+
+export const createFile = form(z.object({
+	fileName: z.string()
+}), async ( {fileName}, invalid): Promise<FileEntry> => {
+	if (!fileName.trim() || /[<>:"|?*]/.test(fileName)) {
+		return invalid(invalid.fileName(`Invalid file name: ${fileName}`));
+	}
+
+	const saneFilePath = getValidPathInTape(fileName);
+	const newFilename = sanitizeFileName(fileName);
+
+	const {params} = getRequestEvent();
+	if (!params.tape) {
+		throw error(400, 'Tape parameter is missing');
+	}
+
+	if (existsSync(saneFilePath)) {
+		return invalid(invalid.fileName('File already exists'));
+	}
+	try {
+		// Créer le dossier s'il n'existe pas
+		await mkdir(dirname(saneFilePath), { recursive: true });
+		// Créer le fichier
+		await writeFile(saneFilePath, '', 'utf-8');
+	} catch (err) {
+		console.error('Error creating file:', err);
+		return invalid(invalid.fileName('Error creating file'));
+	}
+
+	await getFileTree().refresh();
+
+	return {
+		name: newFilename,
+		path: getRelativePathFromTape(saneFilePath),
+		type: 'file',
+		content: '',
+		childs: null
+	};
+});
+
+export const createFileCmd = command(z.object({
+	filePath: z.string()
+}), async ({ filePath: fileName }): Promise<FileEntry> => {
+	// 1. Sanitize and validate file name
+	const filePath = getValidPathInTape(fileName);
+
+	// 2. Check if file already exists
+	if (existsSync(filePath)) {
+		throw new Error('File already exists');
+	}
+
+	// 3. Create necessary directories (supports nested paths like "folder/subfolder/file.txt")
+	await mkdir(dirname(filePath), { recursive: true });
+
+	// TODO: change "writeFile" for a safer stream-based method
+	// If two request arrive at the same time, data can be lost
+	// 4. Create the file
+	await writeFile(filePath, '', 'utf-8');
+	console.log(`Creating file at ${filePath}`);
+
+	// 5. Refresh the file tree
+	await getFileTree().refresh();
+
+	return {
+		name: path.basename(filePath),
+		path: getRelativePathFromTape(filePath),
+		type: 'file',
+		content: '',
+		childs: null
+	};
+});
+
+export const createFileIfNotExists = command(z.object({
+	filePath: z.string()
+}), async ({ filePath: fileName }): Promise<FileEntry> => {
+	const filePath = getValidPathInTape(fileName);
+
+	if (!existsSync(filePath)) {
+		// Create necessary directories
+		await mkdir(dirname(filePath), { recursive: true });
+	
+		// Create the file
+		await writeFile(filePath, '', 'utf-8');
+		console.log(`Creating file at ${filePath}`);
+	
+		// Refresh the file tree
+		await getFileTree().refresh();
+	}
+
+	return {
+		name: path.basename(filePath),
+		path: getRelativePathFromTape(filePath),
+		type: 'file',
+		content: '',
+		childs: null
+	};
+});
+
+export const createFolder = command(z.object({
+	folderName: z.string()
+}), async ({ folderName }): Promise<void> => {
+	const folderPath = getValidPathInTape(folderName);
+	await mkdir(folderPath, { recursive: true });
+	console.log(`Creating folder at ${folderPath}`);
+});
+
+export const writeFileContent = command(z.object({
+	filePath: z.string(),
+	content: z.string()
+}), async ({ filePath, content }) => {
+	const path = getValidPathInTape(filePath);
+	// TODO: change "writeFile" for a safer stream-based method
+	// If two request arrive at the same time, data can be lost
+	await writeFile(path, content.trim(), 'utf-8');
+	console.log(`Writing content to ${path}`);
+});
+
+export const moveEntry = command(z.object({
+	entryPath: z.string(),
+	destFolder: z.string()
+}), async ({ entryPath, destFolder }): Promise<EntryModification[]> => {
+	const saneEntryPath = getValidPathInTape(entryPath);
+	const saneDestFolder = getValidPathInTape(destFolder);
+
+	const entryName = path.basename(saneEntryPath);
+	const newEntryPath = path.resolve(saneDestFolder, entryName);
+
+	if (saneEntryPath === newEntryPath) {
+		return [];
+	}
+
+	await move(saneEntryPath, newEntryPath);
+	await getFileTree().refresh();
+	
+	const isFolder = await lstat(newEntryPath).then(stats => stats.isDirectory()).catch(() => false);
+	const modifications = [{
+		type: 'moved',
+		oldPath: path.join(getRelativePathFromTape(saneEntryPath), isFolder ? '/' : ''),
+		newPath: path.join(getRelativePathFromTape(saneDestFolder), entryName, isFolder ? '/' : ''),
+		isFolder
+	}] satisfies EntryModification[];
+	console.log(modifications);
+
+	return modifications;
+});
+
+export const renameEntry = command(z.object({
+	entryPath: z.string(),
+	newName: z.string()
+}), async ({ entryPath, newName }): Promise<EntryModification[]> => {
+	const saneEntryPath = getValidPathInTape(entryPath);
+	const sanitizedName = sanitizeFileName(newName);
+	const targetFolder = path.dirname(saneEntryPath);
+	const newPath = path.resolve(targetFolder, sanitizedName);
+
+	if (saneEntryPath === newPath) {
+		return [];
+	}
+
+	await move(saneEntryPath, newPath);
+	await getFileTree().refresh();
+
+	const isFolder = await lstat(newPath).then(stats => stats.isDirectory()).catch(() => false);
+	const modifications = [{
+		type: 'renamed',
+		oldPath: path.join(getRelativePathFromTape(saneEntryPath), isFolder ? '/' : ''),
+		newPath: path.join(getRelativePathFromTape(newPath), isFolder ? '/' : ''),
+		isFolder
+	}] satisfies EntryModification[];
+	console.log(modifications);
+	
+	return modifications;
+});
+
+export const removeEntry = command(z.object({
+	entryPath: z.string()
+}), async ({ entryPath }): Promise<EntryModification[]> => {
+	const saneEntryPath = getValidPathInTape(entryPath);
+	const stats = await lstat(saneEntryPath);
+	const isFolder = stats.isDirectory();
+
+	await rm(saneEntryPath, { recursive: true, force: true });
+	await getFileTree().refresh();
+
+	const modifications = [{
+		type: 'removed',
+		oldPath: path.join(getRelativePathFromTape(saneEntryPath), isFolder ? '/' : ''),
+		newPath: '',
+		isFolder
+	}] satisfies EntryModification[];
+	console.log(modifications);
+
+	return modifications;
+});

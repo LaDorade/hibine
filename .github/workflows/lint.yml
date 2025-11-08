@@ -1,0 +1,33 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: write
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Run linter
+        run: pnpm lint

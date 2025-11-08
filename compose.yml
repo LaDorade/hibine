@@ -1,0 +1,9 @@
+services:
+  hibine:
+    build: .
+    volumes:
+      - ./notes/:/app/data/
+    environment:
+      - ORIGIN=http://localhost:3000
+    ports:
+      - "3000:3000"

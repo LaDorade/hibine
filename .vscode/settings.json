@@ -1,0 +1,17 @@
+{
+	// enforce those params for consistency
+	"svelte.plugin.typescript.enable": true,
+	"eslint.validate": [
+		"javascript",
+		"typescript",
+		"svelte"
+	],
+	"editor.formatOnSave": false,
+	"editor.codeActionsOnSave": {
+		// conflicts with tabSize
+		// "source.organizeImports": "explicit"
+	},
+	"editor.tabSize": 2,
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false
+}
