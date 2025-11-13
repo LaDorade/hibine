@@ -104,3 +104,4 @@
 - Cant really create folder directly (eg: "test/"), will throw an error (call of writeFile)
   - Need to check if the path ends with "/" and create the folder instead of a file
   - Need to signal to the front that it's a folder (don't open a tab for it)
+- Stores are not cleaned when switching tape (eg: selectedStore, opentabs)
