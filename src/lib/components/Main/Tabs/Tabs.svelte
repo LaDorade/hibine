@@ -10,7 +10,7 @@
 		class="flex bg-gray-900 border-b border-gray-800 h-12 relative overflow-x-auto overscroll-none scrollbar-hide"
 	>
 		{#each coreAPI.tabs as tab (tab.id)}
-			<TabEntry entry={tab} />
+			<TabEntry {tab} />
 		{/each}
 	</div>
 {/if}
