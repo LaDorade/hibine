@@ -121,6 +121,7 @@ class CoreAPI {
 	 */
 	async syncStates(modifications: EntryModification[]) {
 		await this.#tabStore.syncModifications(modifications);
+		await this.foldState.syncModifications(modifications);
 	}
 
 	async clear() {

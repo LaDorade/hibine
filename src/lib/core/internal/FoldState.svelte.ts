@@ -1,3 +1,4 @@
+import type { EntryModification } from '$types/modification';
 import { SvelteMap } from 'svelte/reactivity';
 
 export class FoldState {
@@ -28,5 +29,17 @@ export class FoldState {
 
 	clear(): void {
 		this.foldStates.clear();
+	}
+
+	async syncModifications(modifications: EntryModification[]): Promise<void> {
+		for (const mod of modifications) {
+			if ((mod.type === 'renamed' || mod.type === 'moved') && this.foldStates.has(mod.oldPath)) {
+				const state = this.foldStates.get(mod.oldPath)!;
+				this.foldStates.delete(mod.oldPath);
+				this.foldStates.set(mod.newPath, state);
+			} else if (mod.type === 'removed' && this.foldStates.has(mod.oldPath)) {
+				this.foldStates.delete(mod.oldPath);
+			}
+		}
 	}
 }
