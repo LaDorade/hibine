@@ -1,12 +1,13 @@
-import { FileAPI } from './internal/FileAPI.svelte';
+import { pushState } from '$app/navigation';
 
+import { FileAPI } from './internal/FileAPI.svelte';
 import { EntryAPI } from './internal/EntryAPI.svelte';
 import { TabKindEnum, TabStore } from './internal/stores/TabStore.svelte';
 import { SelectedStore } from './internal/stores/Selected.svelte';
+import { resolveFile } from '$lib/remotes/files.remote';
+import { FoldState } from '$core/internal/FoldState.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
-import { pushState } from '$app/navigation';
-import { resolveFile } from '$lib/remotes/files.remote';
 
 
 class CoreAPI {
@@ -15,6 +16,7 @@ class CoreAPI {
 	readonly files: FileAPI;
 	readonly entries: EntryAPI;
 	readonly selectedStore: SelectedStore;
+	readonly foldState: FoldState;
 	
 	
 	constructor() {
@@ -24,6 +26,11 @@ class CoreAPI {
 		this.files = new FileAPI(this);
 		this.entries = new EntryAPI(this);
 		this.selectedStore = new SelectedStore();
+		this.foldState = new FoldState();
+	}
+
+	async init() {
+		this.foldState.init();
 	}
 
 	/**

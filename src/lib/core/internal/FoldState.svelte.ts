@@ -1,6 +1,6 @@
 import { SvelteMap } from 'svelte/reactivity';
 
-class FoldState {
+export class FoldState {
 	private foldStates: SvelteMap<string, boolean> = new SvelteMap<string, boolean>();
 
 	init() {
@@ -30,5 +30,3 @@ class FoldState {
 		this.foldStates.clear();
 	}
 }
-
-export const foldStateStore = new FoldState();

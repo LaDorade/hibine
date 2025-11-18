@@ -2,9 +2,7 @@
 		import FileEntry from './FileEntry.svelte';
 		import FolderEntry from './FolderEntry.svelte';
     import { dropAndMove } from '$lib/attachments/drop';
-    import { onMount } from 'svelte';
     import { getFileTree, getCurrentTape } from '$lib/remotes/files.remote';
-    import { foldStateStore } from '$stores/FoldState.svelte';
     import type { FileTree } from '$types/files';
     import { stopEvent } from '$lib/utils';
 
@@ -32,9 +30,6 @@
 			const tape = await getCurrentTape();
 			await dropAndMove({ name: tape, path: '', type: 'dir', childs: files });
 		}
-    onMount(() => {
-    	foldStateStore.init();
-    });
 </script>
 
 <ul

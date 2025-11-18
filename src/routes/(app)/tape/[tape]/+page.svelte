@@ -7,7 +7,7 @@
     import { stopEvent } from '$lib/utils';
     import { page } from '$app/state';
     import { coreAPI } from '$core/CoreAPI.svelte';
-    import { onDestroy, tick } from 'svelte';
+    import { onDestroy, onMount, tick } from 'svelte';
 
     let searchBarOpen: boolean = $state(false);
 
@@ -24,6 +24,9 @@
     	}
     }
 
+		onMount(async () => {
+			await coreAPI.init();
+		});
 		onDestroy(async () => {
 			await coreAPI.clear();
 		});

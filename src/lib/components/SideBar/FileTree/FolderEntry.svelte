@@ -8,8 +8,8 @@
 	import FileEntry from './FileEntry.svelte';
 	import Self from './FolderEntry.svelte';
 	import { dragStore } from '$stores/Drag.svelte';
-	import { foldStateStore } from '$stores/FoldState.svelte';
 	import type { FolderEntry } from '$types/files';
+    import { coreAPI } from '$core/CoreAPI.svelte';
 
 	type Props = {
 		entry: FolderEntry;
@@ -17,13 +17,13 @@
 
 	let { entry }: Props = $props();
 
-	let isOpen = $derived(foldStateStore.isFolded(entry.path));
+	let isOpen = $derived(coreAPI.foldState.isFolded(entry.path));
 
 	async function handleClick(e: MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 		e.stopImmediatePropagation();
-		foldStateStore.toggleFold(entry.path);
+		coreAPI.foldState.toggleFold(entry.path);
 	}
 
 	async function handleDrop(e: DragEvent) {
@@ -35,7 +35,7 @@
 		// await tick because filetreecomp is updated after a drop
 		// otherwise it will open and close at the same time
 		await tick();
-		foldStateStore.setFoldState(entry.path, true);
+		coreAPI.foldState.setFoldState(entry.path, true);
 	}
 </script>
 
