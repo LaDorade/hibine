@@ -4,7 +4,6 @@ import { FileAPI } from './internal/FileAPI.svelte';
 import { EntryAPI } from './internal/EntryAPI.svelte';
 import { TabKindEnum, TabStore } from './internal/stores/TabStore.svelte';
 import { SelectedStore } from './internal/stores/Selected.svelte';
-import { resolveFile } from '$lib/remotes/files.remote';
 import { FoldState } from '$core/internal/FoldState.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
@@ -53,8 +52,8 @@ class CoreAPI {
 		return this.#tabStore.activeTabId === tabId;
 	}
 
-	async resolveFile(path: string, triggerHistory = true) {
-		const file = await resolveFile(path);
+	async openFileAtPath(path: string, triggerHistory = true) {
+		const file = await this.files.getFile(path);
 		await this.openFile(file, triggerHistory);
 	}
 
@@ -127,6 +126,7 @@ class CoreAPI {
 	async clear() {
 		this.#tabStore.clear();
 		this.selectedStore.clear();
+		this.foldState.clear();
 	}
 }
 

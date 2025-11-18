@@ -35,10 +35,10 @@
 <svelte:window onkeydown={handleKeys} onpopstate={async () => {
 	await tick();
 	if (page.state.active && page.state.active !== coreAPI.activeTab?.id) {
-		coreAPI.resolveFile(page.state.active, false);
+		coreAPI.openFileAtPath(page.state.active, false);
 	} else {
 		if (page.state.oldTabId && page.state.oldTabId !== coreAPI.activeTab?.id) {
-			coreAPI.resolveFile(page.state.oldTabId, false);
+			coreAPI.openFileAtPath(page.state.oldTabId, false);
 		}
 	}} }/>
 

@@ -1,4 +1,4 @@
-import { createFileCmd, createFileIfNotExists, getFileContent, writeFileContent } from '$lib/remotes/files.remote';
+import { createFileCmd, createFileIfNotExists, getFileContent, resolveFile, writeFileContent } from '$lib/remotes/files.remote';
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { FileEntry } from '$types/files';
 
@@ -8,6 +8,13 @@ import type { FileEntry } from '$types/files';
  */
 export class FileAPI {
 	constructor(private core: CoreAPI) {}
+
+	/**
+	 * Resolve a file path to a FileEntry.
+	 */
+	getFile = async (path: string): Promise<FileEntry> => {
+		return await resolveFile(path);
+	};
 
 	/**
 	 * Read file content from disk.
@@ -25,7 +32,6 @@ export class FileAPI {
 	writeFile = async (file: FileEntry, content: string): Promise<void> => {
 		await writeFileContent({ filePath: file.path, content });
 	};
-
 
 	async createFile(filePath: string): Promise<FileEntry> {
 		return await createFileCmd({filePath});
