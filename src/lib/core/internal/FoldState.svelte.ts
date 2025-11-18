@@ -4,8 +4,13 @@ import { SvelteMap } from 'svelte/reactivity';
 export class FoldState {
 	private foldStates: SvelteMap<string, boolean> = new SvelteMap<string, boolean>();
 
-	init() {
-		const folderState = JSON.parse(window.localStorage.getItem('folderState') || '{}');
+	private tapeName: string | null = null;
+	private storageKey: string | null = null;
+
+	init(tapeName: string) {
+		this.tapeName = tapeName;
+		this.storageKey = tapeName + '_folderState';
+		const folderState = JSON.parse(window.localStorage.getItem(this.storageKey) || '{}');
 		for (const [key, value] of Object.entries(folderState)) {
 			this.foldStates.set(key, Boolean(value));
 		}
@@ -22,9 +27,13 @@ export class FoldState {
 
 	setFoldState(path: string, state: boolean): void {
 		this.foldStates.set(path, state);
-		const folderState = JSON.parse(window.localStorage.getItem('folderState') || '{}');
+		if (!this.storageKey && !this.tapeName) {
+			console.warn('Tape name is not set. Can\'t save fold state.');
+			return;
+		}
+		const folderState = JSON.parse(window.localStorage.getItem(this.storageKey!) || '{}');
 		folderState[path] = state;
-		window.localStorage.setItem('folderState', JSON.stringify(folderState));
+		window.localStorage.setItem(this.storageKey!, JSON.stringify(folderState));
 	}
 
 	clear(): void {

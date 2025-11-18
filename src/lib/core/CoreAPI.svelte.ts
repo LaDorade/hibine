@@ -7,6 +7,7 @@ import { SelectedStore } from './internal/stores/Selected.svelte';
 import { FoldState } from '$core/internal/FoldState.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
+import { getCurrentTape } from '$lib/remotes/files.remote';
 
 
 class CoreAPI {
@@ -29,7 +30,8 @@ class CoreAPI {
 	}
 
 	async init() {
-		this.foldState.init();
+		const tapeName = await getCurrentTape();
+		this.foldState.init(tapeName);
 	}
 
 	/**
