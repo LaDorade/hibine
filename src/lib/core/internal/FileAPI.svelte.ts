@@ -1,14 +1,13 @@
 import { createFileCmd, createFileIfNotExists, getFileContent, writeFileContent } from '$lib/remotes/files.remote';
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { FileEntry } from '$types/files';
-import type { HookManager } from '$core/HookManager';
 
 /**
  * @class FileAPI
  * @internal You should not use this API directly, but use {@linkcode CoreAPI.files} instead.
  */
 export class FileAPI {
-	constructor(private core: CoreAPI, private hookManager: HookManager) {}
+	constructor(private core: CoreAPI) {}
 
 	/**
 	 * Read file content from disk.
@@ -25,7 +24,6 @@ export class FileAPI {
 	 */
 	writeFile = async (file: FileEntry, content: string): Promise<void> => {
 		await writeFileContent({ filePath: file.path, content });
-		this.hookManager.trigger('onFileSave', file);
 	};
 
 

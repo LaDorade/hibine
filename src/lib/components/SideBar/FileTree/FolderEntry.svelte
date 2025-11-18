@@ -19,7 +19,7 @@
 
 	let isOpen = $derived(foldStateStore.isFolded(entry.path));
 
-	function handleClick(e: MouseEvent) {
+	async function handleClick(e: MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 		e.stopImmediatePropagation();

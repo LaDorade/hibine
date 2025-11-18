@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { coreAPI } from '$core/CoreAPI.svelte';
 	import { viewportStore } from '$stores/Viewport.svelte';
-	import type { EditorPluginProps } from '$core/types';
 
+	
 	let { 
 		file = $bindable(), 
 		handleContentChange
-	}: EditorPluginProps = $props();
+	} = $props();
 
 	function autofocus(node: HTMLElement) {
 		if (!viewportStore.isMobile && coreAPI.activeTab?.id === file.path) {

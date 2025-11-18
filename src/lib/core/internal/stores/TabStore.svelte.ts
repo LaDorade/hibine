@@ -1,25 +1,27 @@
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { FileEntry } from '$types/files';
 import type { Component } from 'svelte';
-import type { ViewComponentProps } from '../UIAPI.svelte';
 import type { EntryModification } from '$types/modification';
 
-export type TabKind = 'file' | 'plugin';
+export enum TabKindEnum {
+	FILE = 'file',
+	VIEW = 'view',
+}
 
 interface BaseTabEntry {
   id: string; // unique
-  kind: TabKind;
+  kind: TabKindEnum;
   title: string;
 }
 
 export type TabEntry =
 	| (BaseTabEntry & {
-		kind: 'file';
+		kind: TabKindEnum.FILE;
 		file: FileEntry;
 	})
 	| (BaseTabEntry & {
-		kind: 'plugin';
-		component: Component<ViewComponentProps>;
+		kind: TabKindEnum.VIEW;
+		component: Component;
 	})
 
 

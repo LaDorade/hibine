@@ -1,21 +1,15 @@
 import { FileAPI } from './internal/FileAPI.svelte';
 
 import { EntryAPI } from './internal/EntryAPI.svelte';
-import { PluginRegistry } from '$core/PluginRegistry.svelte';
-import { HookManager } from '$core/HookManager';
-import { TabStore } from './internal/stores/TabStore.svelte';
-import { UIAPI } from './internal/UIAPI.svelte';
+import { TabKindEnum, TabStore } from './internal/stores/TabStore.svelte';
 import { SelectedStore } from './internal/stores/Selected.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 
 
 class CoreAPI {
-	readonly #hookManager: HookManager;
 	readonly #tabStore: TabStore;
 
-	readonly ui: UIAPI;
-	readonly pluginRegistry: PluginRegistry;
 	readonly files: FileAPI;
 	readonly entries: EntryAPI;
 	readonly selectedStore: SelectedStore;
@@ -23,12 +17,9 @@ class CoreAPI {
 	
 	constructor() {
 		// Internal
-		this.#hookManager = new HookManager();
 		this.#tabStore = new TabStore(this);
 
-		this.ui = new UIAPI(this);
-		this.pluginRegistry = new PluginRegistry(this, this.#hookManager);
-		this.files = new FileAPI(this, this.#hookManager);
+		this.files = new FileAPI(this);
 		this.entries = new EntryAPI(this);
 		this.selectedStore = new SelectedStore();
 	}
@@ -61,7 +52,7 @@ class CoreAPI {
 			file.content = content;
 
 			const tabEntry = {
-				kind: 'file' as const,
+				kind: TabKindEnum.FILE as const,
 				id: file.path,
 				file: file,
 				title: file.name
@@ -70,30 +61,6 @@ class CoreAPI {
 		} else {
 			// If already opened, just activate it
 			await this.activateTab(file.path);
-		}
-
-		// 3. Trigger hooks
-		await this.#hookManager.trigger('onFileOpen', file);
-	}
-
-	async openPluginView(pluginId: string, tabTitle?: string) {
-		// Open plugin view in store (UI)
-		if (!this.#tabStore.tabs.find(t => t.kind === 'plugin' && t.id === pluginId)) {
-			const component = this.ui.viewItems.get(pluginId);
-			if (!component) {
-				throw new Error(`Plugin view component not found for plugin ID: ${pluginId}`);
-			}
-			
-			const tabEntry = {
-				kind: 'plugin' as const,
-				id: pluginId,
-				title: tabTitle || pluginId,
-				component: component
-			};
-			await this.#tabStore.openTab(tabEntry);
-		} else {
-			// If already opened, just activate it
-			await this.activateTab(pluginId);
 		}
 	}
 
@@ -107,8 +74,6 @@ class CoreAPI {
 		if (tab.kind === 'file') {
 			const content = await this.files.readFile(tab.file);
 			tab.file.content = content;
-			// Trigger hooks
-			await this.#hookManager.trigger('onFileActive', tab.file);
 		}
 	}
 
@@ -118,9 +83,6 @@ class CoreAPI {
 
 		// Close the tab in the store
 		this.#tabStore.closeTab(tab.id);
-
-		// Trigger hooks
-		await this.#hookManager.trigger('onTabClose', tab);
 	}
 
 	/**
