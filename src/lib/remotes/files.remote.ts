@@ -50,6 +50,27 @@ export const getFileContent = query(z.string(), async (filePath): Promise<string
 	return file;
 });
 
+export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry> => {
+	const saneFilePath = getValidPathInTape(filePath);
+	if (!existsSync(saneFilePath)) {
+		throw error(404, 'File not found');
+	}
+
+	const stats = await lstat(saneFilePath);
+	if (stats.isDirectory()) {
+		throw error(400, 'Path is a directory, not a file');
+	}
+
+	const content = await readFile(saneFilePath, { encoding: 'utf-8' });
+	return {
+		name: path.basename(saneFilePath),
+		path: getRelativePathFromTape(saneFilePath),
+		type: 'file',
+		content,
+		childs: null
+	};
+});
+
 export const createFile = form(z.object({
 	fileName: z.string()
 }), async ( {fileName}, invalid): Promise<FileEntry> => {

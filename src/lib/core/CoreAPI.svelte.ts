@@ -5,6 +5,8 @@ import { TabKindEnum, TabStore } from './internal/stores/TabStore.svelte';
 import { SelectedStore } from './internal/stores/Selected.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
+import { pushState } from '$app/navigation';
+import { resolveFile } from '$lib/remotes/files.remote';
 
 
 class CoreAPI {
@@ -44,7 +46,12 @@ class CoreAPI {
 		return this.#tabStore.activeTabId === tabId;
 	}
 
-	async openFile(file: FileEntry) {
+	async resolveFile(path: string, triggerHistory = true) {
+		const file = await resolveFile(path);
+		await this.openFile(file, triggerHistory);
+	}
+
+	async openFile(file: FileEntry, triggerHistory = true) {
 		// Open file in store (UI)
 		if (!this.#tabStore.tabs.find(t => t.kind === 'file' && t.id === file.path)) {
 			// Load content
@@ -57,7 +64,16 @@ class CoreAPI {
 				file: file,
 				title: file.name
 			};
-			await this.#tabStore.openTab(tabEntry);
+			const oldTabId = this.activeTab?.id;
+
+			this.#tabStore.openTab(tabEntry);
+
+			if (triggerHistory) {
+				pushState('', {
+					oldTabId,
+					active: this.activeTab?.id
+				});
+			}
 		} else {
 			// If already opened, just activate it
 			await this.activateTab(file.path);
@@ -77,12 +93,19 @@ class CoreAPI {
 		}
 	}
 
-	async closeTab(tabId: string) {
+	async closeTab(tabId: string, triggerHistory = true) {
 		const tab = this.#tabStore.tabs.find(t => t.id === tabId);
 		if (!tab) return;
 
 		// Close the tab in the store
 		this.#tabStore.closeTab(tab.id);
+
+		if (triggerHistory) {
+			pushState('', {
+				oldTabId: this.activeTab?.id,
+				active: tabId
+			});
+		}
 	}
 
 	/**
