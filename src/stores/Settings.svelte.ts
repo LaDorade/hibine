@@ -1,3 +1,4 @@
+import { SaveSettings } from './Settings/Save.svelte';
 import type { Options } from '$types/options';
 
 const defaultOptions: Options = {
@@ -5,14 +6,14 @@ const defaultOptions: Options = {
 } as const;
 
 class Settings {
-	autoSave: boolean = $state(defaultOptions.autoSave);
+	saveSet = $state(new SaveSettings());
 
 	static getDefaults(): Options {
 		return defaultOptions;
 	}
 
-	settings = $derived({
-		autoSave: this.autoSave,
+	#settings: Options = $derived({
+		autoSave: this.saveSet.autoSave,
 	});
 
 	#firstLoad = true;
@@ -22,7 +23,8 @@ class Settings {
 		const savedSettings = localStorage.getItem('settings');
 		if (savedSettings) {
 			const parsedSettings = JSON.parse(savedSettings);
-			this.autoSave = parsedSettings.autoSave ?? this.autoSave;
+
+			this.saveSet.autoSave = parsedSettings.autoSave ?? this.saveSet.autoSave;
 		}
 		this.#firstLoad = false;
 	}
@@ -30,32 +32,21 @@ class Settings {
 	save() {
 		console.log('Saving settings to localStorage...');
 		const settingsToSave = {
-			autoSave: this.autoSave,
+			autoSave: this.saveSet,
 		};
 		localStorage.setItem('settings', JSON.stringify(settingsToSave));
+	}
+
+	get(settingKey: keyof Options) {
+		return this.#settings[settingKey];
+	}
+
+	update(newSettings: Partial<Options>) {
+		if (newSettings.autoSave !== undefined) {
+			this.saveSet.autoSave = newSettings.autoSave;
+		}
+		this.save();
 	}
 }
 
 export const settings = new Settings();
-
-const prox = (settings: Settings) => new Proxy(settings, {
-	get(target, prop: string) {
-		if (prop in target) {
-			target.load();
-			//@ts-expect-error Proxy dynamic access
-			return target[prop];
-		}
-		return undefined;
-	},
-	set(target, prop, value) {
-		if (prop in target) {
-			//@ts-expect-error Proxy dynamic access
-			target[prop] = value;
-			target.save();
-			return true;
-		}
-		return false;
-	}
-});
-
-export const proxiedSettings = prox(settings);
