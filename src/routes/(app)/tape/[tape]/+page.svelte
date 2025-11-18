@@ -7,7 +7,7 @@
     import { stopEvent } from '$lib/utils';
     import { page } from '$app/state';
     import { coreAPI } from '$core/CoreAPI.svelte';
-    import { tick } from 'svelte';
+    import { onDestroy, tick } from 'svelte';
 
     let searchBarOpen: boolean = $state(false);
 
@@ -23,6 +23,10 @@
     		// TODO: add small feedback
     	}
     }
+
+		onDestroy(async () => {
+			await coreAPI.clear();
+		});
 </script>
 
 <svelte:window onkeydown={handleKeys} onpopstate={async () => {

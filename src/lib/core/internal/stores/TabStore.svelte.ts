@@ -100,4 +100,9 @@ export class TabStore {
 			}
 		}
 	}
+
+	clear() {
+		this.tabs = [];
+		this.activeTabId = null;
+	}
 }

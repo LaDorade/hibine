@@ -117,6 +117,10 @@ class CoreAPI {
 		await this.#tabStore.syncModifications(modifications);
 	}
 
+	async clear() {
+		this.#tabStore.clear();
+		this.selectedStore.clear();
+	}
 }
 
 export type { CoreAPI };
