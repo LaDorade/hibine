@@ -84,8 +84,7 @@
 
 	<div
 		class={['p-2 flex items-center justify-between gap-2',
-			'bg-linear-to-br from-gray-800 to-green-900 from-90%',
-			'border-t border-transparent hover:border-gray-700',
+			'border-t border-gray-600',
 			'transition-all duration-150',
 		]}
 	>

@@ -88,7 +88,7 @@
 									type="button"
 									aria-label="Collapse Sidebar"
 									class="h-full text-sm text-white px-4
-						hover:bg-gray-700 transition-opacity cursor-pointer"
+						hover:bg-gray-700 transition-opacity cursor-pointer border-b border-gray-600"
 									onclick={() => sidebarPane.collapse()}
 								>
 									<span class="w-4 h-4">
