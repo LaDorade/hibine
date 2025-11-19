@@ -8,6 +8,7 @@ import { FoldState } from '$core/internal/FoldState.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 import { getCurrentTape } from '$lib/remotes/files.remote';
+import { ViewMap } from '$components/Main/View';
 
 
 class CoreAPI {
@@ -85,6 +86,36 @@ class CoreAPI {
 		} else {
 			// If already opened, just activate it
 			await this.activateTab(file.path);
+		}
+	}
+	
+	async openView(name: keyof typeof ViewMap, triggerHistory = true) {
+		const viewDef = ViewMap[name];
+		if (!viewDef) {
+			throw new Error(`View "${name}" not found in ViewMap`);
+		}
+
+		// Open view in store (UI)
+		if (!this.#tabStore.tabs.find(t => t.kind === 'view' && t.id === name)) {
+			const tabEntry = {
+				kind: TabKindEnum.VIEW as const,
+				id: name,
+				component: viewDef.component,
+				title: viewDef.title
+			};
+			const oldTabId = this.activeTab?.id;
+
+			this.#tabStore.openTab(tabEntry);
+
+			if (triggerHistory) {
+				pushState('', {
+					oldTabId,
+					active: this.activeTab?.id
+				});
+			}
+		} else {
+			// If already opened, just activate it
+			await this.activateTab(name);
 		}
 	}
 

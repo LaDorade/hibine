@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { coreAPI } from '$core/CoreAPI.svelte';
 	import EditorRenderer from './Editor/EditorRenderer.svelte';
+	import ViewRenderer from './View/ViewRenderer.svelte';
 
 </script>
 
@@ -16,7 +17,7 @@
 		{#if tab.kind === 'file'}
 			<EditorRenderer bind:entry={tab.file} />
 		{:else if tab.kind === 'view'}
-			TBD
+			<ViewRenderer entry={tab} />
 		{:else}
 			<div class="p-4">Unknown Tab Type</div>
 		{/if}

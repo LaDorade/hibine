@@ -105,6 +105,7 @@
 			</button>
 		</div>
 		<button
+			onclick={() => coreAPI.openView('settings')}
 			class={[
 				'w-8 h-8 p-1 flex justify-center items-center rounded-lg',
 				'backdrop-hue-rotate-90',

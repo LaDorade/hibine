@@ -14,15 +14,16 @@ interface BaseTabEntry {
   title: string;
 }
 
-export type TabEntry =
-	| (BaseTabEntry & {
-		kind: TabKindEnum.FILE;
-		file: FileEntry;
-	})
-	| (BaseTabEntry & {
-		kind: TabKindEnum.VIEW;
-		component: Component;
-	})
+export type TabViewEntry = BaseTabEntry & {
+	kind: TabKindEnum.VIEW;
+	component: Component;
+}
+export type TabFileEntry = BaseTabEntry & {
+	kind: TabKindEnum.FILE;
+	file: FileEntry;
+}
+
+export type TabEntry = TabViewEntry | TabFileEntry;
 
 
 export class TabStore {
