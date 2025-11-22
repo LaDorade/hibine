@@ -65,17 +65,18 @@
 			{#if renaming}
 				<input
 					data-testid="rename-entry-input"
-					{@attach (e) => {
+					{@attach (node: HTMLElement) => {
 						tick().then(() => {
-							e.focus();
-							e.select();
+							node.focus();
+							//@ts-expect-error select
+							node.select();
 						});
 					}}
 					{@attach handleClickOutside}
 					bind:value={newName}
 					type="text"
 					class="text-gray-200 focus:outline-none w-full"
-					onkeydown={async (e) => {
+					onkeydown={async (e: KeyboardEvent) => {
 						if (e.key === 'Enter') {
 							renaming = false;
 							await renameEntry(entry.path, newName);

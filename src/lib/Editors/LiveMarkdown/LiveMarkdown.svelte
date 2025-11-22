@@ -2,9 +2,9 @@
 	import { coreAPI } from '$core/CoreAPI.svelte';
 	import { viewportStore } from '$stores/Viewport.svelte';
 
-	
-	let { 
-		file = $bindable(), 
+
+	let {
+		file = $bindable(),
 		handleContentChange
 	} = $props();
 
@@ -18,11 +18,10 @@
 <textarea
 	bind:value={file.content}
 	{@attach autofocus}
-	oninput={(e) => handleContentChange(e, file)}
+	oninput={(e: InputEvent) => handleContentChange(e, file)}
 	class="w-full h-full p-6 font-mono text-base leading-relaxed bg-gray-900
 			focus:outline-none focus:ring-0
 			resize-none text-gray-200 placeholder-gray-500 shadow-sm
 			markdown-editor"
 	placeholder="Start writing markdown..."
 ></textarea>
-

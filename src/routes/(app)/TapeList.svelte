@@ -25,7 +25,7 @@
 				</i>
 			</Card>
 		{/snippet}
-		{#snippet failed(err, reset)}
+		{#snippet failed(err: Error, reset: () => void)}
 			{@const error = err as Error}
 			<Card type="button" onclick={reset} class="w-60 flex flex-col gap-4 justify-center items-center bg-red-800/30 rounded hover:bg-red-700/40 cursor-pointer">
 				<span>
@@ -59,7 +59,7 @@
 					})} class="flex flex-col gap-2 justify-center items-center p-2">
 						<input
 							{...createTape.fields.tapeName.as('text')}
-							{@attach (node) => node.focus()}
+							{@attach (node: HTMLInputElement) => node.focus()}
 							placeholder="Enter tape name"
 							bind:value={newTapeName}
 							class="p-2 w-full bg-gray-800 focus:outline-none rounded border-b"

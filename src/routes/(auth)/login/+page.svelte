@@ -18,7 +18,7 @@
             <label class="block text-gray-300 mb-2" for="username">Username</label>
             <input
 								{...login.fields.username.as('text')}
-                {@attach (node) => node.focus()}
+                {@attach (node: HTMLInputElement) => node.focus()}
                 bind:value={username}
                 class="w-full px-3 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:border-blue-500 focus:outline-none"
             />

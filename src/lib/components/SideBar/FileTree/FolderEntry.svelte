@@ -49,11 +49,11 @@
 	aria-selected="false"
 	aria-expanded={isOpen}
 	draggable="true"
-	ondragover={(e) => {
+	ondragover={(e: DragEvent) => {
 		e.preventDefault(); // ! Mandatory to allow drop event
 	}}
 	ondrop={handleDrop}
-	ondragstart={(e) => {
+	ondragstart={(e: DragEvent) => {
 		e.stopPropagation();
 
 		dragStore.drag($state.snapshot(entry));

@@ -24,7 +24,7 @@
 			});
 			return fileTree;
 		}
-		
+
 		async function handleDrop(e: DragEvent) {
 			stopEvent(e);
 			const tape = await getCurrentTape();
@@ -38,7 +38,7 @@
 		aria-multiselectable="true"
 		tabindex="-1"
 		aria-label="File Tree"
-    ondragover={(e) => e.preventDefault()}
+    ondragover={(e: DragEvent) => e.preventDefault()}
     ondrop={handleDrop}
 >
     <!-- File/Folder list -->
