@@ -28,7 +28,7 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<Resizable.PaneGroup class="hidden md:block" direction="horizontal">
+<Resizable.PaneGroup class="hidden md:block h-full" direction="horizontal">
 	{#if isCollapsed}
 		<div
 			class="w-fit p-2 h-full flex flex-col group"
@@ -113,8 +113,8 @@
 		</div>
 	</Resizable.Pane>
 	<Resizable.Handle class="hidden md:block duration-150 opacity-0 active:opacity-100 hover:opacity-100 focus:opacity-100" />
-	<Resizable.Pane class="" defaultSize={75} minSize={50}>
-		<div class="w-full h-full flex flex-col">
+	<Resizable.Pane class="h-full" defaultSize={75} minSize={50}>
+		<div class="w-full h-full grid grid-rows-[auto_auto_1fr]">
 			<Tabs />
 			<Breadcrumb />
 			<View />

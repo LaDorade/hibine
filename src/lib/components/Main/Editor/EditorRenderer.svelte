@@ -8,7 +8,7 @@
 
 	// Debounce the writeToFile calls
 	let timeout: NodeJS.Timeout | null = null;
-	async function handleContentChange(e: Event, file: FileEntry) {
+	async function handleContentChange(file: FileEntry) {
 		if (!settings.get('autoSave') || file.content === null) {
 			return;
 		}
@@ -30,6 +30,6 @@
 	const MdEditor = liveMarkdown.component;
 </script>
 
-<div class="relative w-full h-full">
+<div class="h-full">
 	<MdEditor file={entry} {handleContentChange} />
 </div>

@@ -52,7 +52,7 @@
 
 <main
 	aria-label="Main content"
-	class="w-full h-full grid grid-rows-[1fr_auto] md:flex md:flex-row-reverse"
+	class="w-full h-full overflow-auto grid grid-rows-[1fr_auto]"
 >
 		<Pane />
 		<!-- Mobile only -->
