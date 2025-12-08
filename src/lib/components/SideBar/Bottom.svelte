@@ -84,7 +84,7 @@
 
 	<div
 		class={['p-2 flex items-center justify-between gap-2',
-			'border-t border-gray-600',
+			'border-t-4 border-black',
 			'transition-all duration-150',
 		]}
 	>

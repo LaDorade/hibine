@@ -61,7 +61,7 @@
 	onMount(() => {
 		cm = new EditorView({
 			parent: dom,
-			doc: file.content,
+			doc: file.content ?? '',
 			extensions: [
 				basicTheme,
 				fixedHeightEditor,

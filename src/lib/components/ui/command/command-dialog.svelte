@@ -28,9 +28,11 @@
 		<Dialog.Title>{title}</Dialog.Title>
 		<Dialog.Description>{description}</Dialog.Description>
 	</Dialog.Header>
-	<Dialog.Content class="overflow-hidden p-0" {portalProps}>
+	<Dialog.Content class="overflow-hidden p-0 rounded-none border-4 border-black shadow-[2px_2px] shadow-black" {portalProps}>
 		<Command
-			class="**:data-[slot=command-input-wrapper]:h-12 [&_[data-command-group]:not([hidden])_~[data-command-group]]:pt-0 **:data-command-group:px-2 [&_[data-command-input-wrapper]_svg]:h-5 [&_[data-command-input-wrapper]_svg]:w-5 **:data-command-input:h-12 **:data-command-item:px-2 **:data-command-item:py-3 [&_[data-command-item]_svg]:h-5 [&_[data-command-item]_svg]:w-5"
+			class={['**:data-[slot=command-input-wrapper]:h-12 [&_[data-command-group]:not([hidden])_~[data-command-group]]:pt-0 **:data-command-group:px-2 [&_[data-command-input-wrapper]_svg]:h-5 [&_[data-command-input-wrapper]_svg]:w-5 **:data-command-input:h-12 **:data-command-item:px-2 **:data-command-item:py-3 [&_[data-command-item]_svg]:h-5 [&_[data-command-item]_svg]:w-5',
+				'rounded-none'
+			]}
 			{...restProps}
 			bind:value
 			bind:ref

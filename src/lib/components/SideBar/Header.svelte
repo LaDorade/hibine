@@ -20,7 +20,7 @@
 			<a class={[
 				'w-full',
 				'flex items-center gap-3 px-3 h-12 text-gray-200 bg-gray-800 hover:bg-gray-700', 
-				'border-b border-gray-600 hover:border-gray-700',
+				'border-b-4 border-black',
 				'transition-all duration-150',
 				className
 			]}

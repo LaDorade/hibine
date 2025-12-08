@@ -41,10 +41,14 @@
 						role="button"
 						type="button"
 						aria-label="Expand Sidebar"
-						class="p-3 flex items-center justify-center
-				bg-gray-800 rounded-lg shadow-lg cursor-pointer
-				hover:bg-gray-700 transition-opacity
-				opacity-50 group-hover:opacity-100"
+						class={[
+							'p-3 flex items-center justify-center',
+							'bg-gray-800 cursor-pointer',
+							'hover:bg-gray-700 transition-all',
+							'opacity-50 group-hover:opacity-100',
+							'shadow-[2px_2px] shadow-black border-4 border-black',
+							'hover:translate-0.5 hover:shadow-none duration-150',
+						]}
 						onclick={() => sidebarPane.expand()}
 					>
 						<span class="w-6">
@@ -88,7 +92,7 @@
 									type="button"
 									aria-label="Collapse Sidebar"
 									class="h-full text-sm text-white px-4
-						hover:bg-gray-700 transition-opacity cursor-pointer border-b border-gray-600"
+						hover:bg-gray-700 transition-opacity cursor-pointer border-b-4 border-black"
 									onclick={() => sidebarPane.collapse()}
 								>
 									<span class="w-4 h-4">
@@ -112,7 +116,9 @@
 			</SideBar>
 		</div>
 	</Resizable.Pane>
-	<Resizable.Handle class="hidden md:block duration-150 opacity-0 active:opacity-100 hover:opacity-100 focus:opacity-100" />
+	<Resizable.Handle
+		class="hidden md:block duration-150 opacity-0 active:opacity-100 hover:opacity-100 focus:opacity-100"
+	/>
 	<Resizable.Pane class="h-full" defaultSize={75} minSize={50}>
 		<div class="w-full h-full grid grid-rows-[auto_auto_1fr]">
 			<Tabs />

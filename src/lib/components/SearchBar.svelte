@@ -75,7 +75,7 @@
 						value={entry.path}
 						onSelect={() => openFile(entry)}
 					>
-						<div class="flex justify-between w-full">
+						<div class="flex px-4 justify-between w-full">
 							<span>
 								{entry.name}
 							</span>

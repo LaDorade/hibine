@@ -16,7 +16,10 @@
 
 <section class={[
 	'overflow-auto overscroll-none flex flex-col justify-between',
-	'shadow-lg m-2 rounded-xl',
+	'm-2',
+	'bg-gray-800',
+	'border-4 border-black',
+	'shadow-black',
 	className ?? '',
 ]}>
     <div class="h-full">

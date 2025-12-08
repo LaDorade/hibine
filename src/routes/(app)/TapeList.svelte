@@ -5,8 +5,11 @@
 	import Card from './Card.svelte';
 	import { clickOutside } from '$lib/attachments/clickOutside';
 
+	let {
+		creatingTape = $bindable()
+	}: {creatingTape: boolean} = $props();
+
 	let newTapeName: string = $state('');
-	let creatingTape: boolean = $state(false);
 
 	function onClickOutside(node: HTMLElement) {
 		clickOutside(node, () => {
@@ -16,7 +19,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-2 w-full h-full overflow-auto">
+<div class="flex flex-col gap-2 w-full h-full px-2">
 	<svelte:boundary>
 		{#snippet pending()}
 			<Card type="none" class="w-60 flex justify-center items-center">
@@ -36,14 +39,14 @@
 				</span>
 			</Card>
 		{/snippet}
-		<div class="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-2 w-full">
+		<div class="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-4 w-full">
 			<Card
 				type="button"
 				onclick={() => (creatingTape = true)}
 				{@attach onClickOutside}
 				class={[
 					'cursor-pointer group bg-gray-800/50 hover:bg-gray-800 border-2 border-dashed border-gray-700 flex justify-center items-center',
-					creatingTape ? 'bg-gray-800 hover:bg-gray-800' : ''
+					creatingTape ? 'bg-gray-800 hover:bg-gray-800 border border-solid' : ''
 				]}
 			>
 				{#if !creatingTape}
@@ -62,11 +65,15 @@
 							{@attach (node: HTMLInputElement) => node.focus()}
 							placeholder="Enter tape name"
 							bind:value={newTapeName}
-							class="p-2 w-full bg-gray-800 focus:outline-none rounded border-b"
+							class={['p-2 w-full bg-gray-800 focus:outline-none',
+								'shadow-[2px_2px] shadow-black border border-black'
+							]}
 						/>
 						<label class="">
-							<button type="submit" class="cursor-pointer hover:bg-gray-700 flex gap-2 justify-center items-center rounded-xl shadow-lg border px-2 py-1">
-								Add
+							<button type="submit" class={['cursor-pointer bg-gray-700 hover:bg-gray-600 flex gap-2 justify-center items-center border px-4 py-2',
+								'border border-black shadow-[2px_2px] shadow-black'
+							]}>
+								Add (⏎)
 								<Plus class="w-4 h-4 text-gray-400" />
 							</button>
 						</label>
@@ -74,7 +81,7 @@
 				{/if}
 			</Card>
 			{#each await getExistingTapes() as tape (tape)}
-				<Card href={resolve(`/tape/${tape}`)} class=" hover:bg-gray-700 flex justify-center items-center">
+				<Card href={resolve(`/tape/${tape}`)} class="flex justify-center items-center">
 					{tape}
 				</Card>
 			{/each}
