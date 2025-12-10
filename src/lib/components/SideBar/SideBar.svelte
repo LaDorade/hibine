@@ -19,7 +19,7 @@
 	'm-2',
 	'bg-gray-800',
 	'border-4 border-black',
-	'shadow-black',
+	'shadow-black shadow-[2px_2px]',
 	className ?? '',
 ]}>
     <div class="h-full">

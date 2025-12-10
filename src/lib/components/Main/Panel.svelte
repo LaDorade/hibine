@@ -7,7 +7,11 @@
 
 {#each coreAPI.tabs as tab (tab.id)}
 	<div
-		class="w-full h-full overflow-auto overscroll-none"
+		class={['overscroll-none overflow-hidden border-2 border-black',
+			'shadow-[4px_4px] shadow-black',
+			'bg-gray-800',
+			'my-2 mr-2'
+		]}
 		class:hidden={tab.id !== coreAPI.activeTab?.id}
 		hidden={tab.id !== coreAPI.activeTab?.id}
 		role="tabpanel"

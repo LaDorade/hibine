@@ -30,6 +30,6 @@
 	const MdEditor = liveMarkdown.component;
 </script>
 
-<div class="h-full">
+<div class="h-full overflow-hidden">
 	<MdEditor file={entry} {handleContentChange} />
 </div>

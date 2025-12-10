@@ -16,11 +16,13 @@
 		aria-label="breadcrumb"
 		data-testid="breadcrumb"
 		class={[
-			'flex gap-1 px-2 w-fit',
+			'flex gap-1 px-2 mt-2 w-fit',
 			'text-sm',
 			'items-center',
 			'text-gray-400',
-			'bg-gray-800 rounded-b-lg',
+			'bg-gray-800/50',
+			'border-2 border-black/50',
+			'shadow-[4px_4px] shadow-black/50'
 		]}
 	>
 		{#each activeFilePath || '' as segment, index (index)}
