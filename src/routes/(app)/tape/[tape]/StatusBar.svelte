@@ -5,9 +5,11 @@
 <div class="px-2 hidden md:block">
 	<div
 		class={[
-			'w-full shadow-lg rounded-t-xl h-6 bg-gray-200',
-			'justify-end items-center',
-			'bg-gray-800 text-xs flex items-center px-4',
+			'flex justify-between items-center h-fit p-2 px-4',
+			'bg-gray-800',
+			'border-4 border-black border-b-0',
+			'shadow-[4px_4px] shadow-black',
+			'font-light text-sm'
 		]}
 	>
 		{#if settings.saveSet.saving}

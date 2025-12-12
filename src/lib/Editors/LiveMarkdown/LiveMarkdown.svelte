@@ -61,7 +61,7 @@
 	onMount(() => {
 		cm = new EditorView({
 			parent: dom,
-			doc: file.content,
+			doc: file.content ?? '',
 			extensions: [
 				basicTheme,
 				fixedHeightEditor,
@@ -85,6 +85,6 @@
 <div
 	bind:this={dom}
 	{@attach autofocus}
-	class="h-full p-4"
+	class="p-4 h-full overflow-auto"
 	placeholder="Start writing markdown..."
 ></div>

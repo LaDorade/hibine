@@ -14,7 +14,10 @@
 </script>
 
 <a class={[
-	'flex rounded-lg shadow-lg h-40 bg-gray-800 border border-gray-700 border-b-green-400/20',
+	'flex border-2 border-black shadow-black h-40',
+	'shadow-[4px_4px] hover:shadow-none hover:translate-1',
+	'duration-100 transition-all',
+	'bg-gray-800',
 	className
 ]} {...rest}>
 	{@render children?.()}

@@ -51,7 +51,7 @@
 			data-inSelection={coreAPI.selectedStore.isSelected(entry.path)}
 			class={[
 				'flex gap-2 items-center p-2 md:py-0 text-sm cursor-pointer group relative text-gray-200',
-				'rounded-sm hover:bg-gray-600 hover:border-green-500',
+				'hover:bg-gray-600 hover:border-green-500',
 				'transition-all duration-150 w-full',
 				'data-[active=true]:bg-green-400/10',
 				'focus:outline-none focus:bg-green-400/20 data-[active=true]:focus:bg-green-400/30',
