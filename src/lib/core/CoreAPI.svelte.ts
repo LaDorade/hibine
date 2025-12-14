@@ -12,156 +12,156 @@ import { ViewMap } from '$components/Main/View';
 
 
 class CoreAPI {
-	readonly #tabStore: TabStore;
+  readonly #tabStore: TabStore;
 
-	readonly files: FileAPI;
-	readonly entries: EntryAPI;
-	readonly selectedStore: SelectedStore;
-	readonly foldState: FoldState;
+  readonly files: FileAPI;
+  readonly entries: EntryAPI;
+  readonly selectedStore: SelectedStore;
+  readonly foldState: FoldState;
 	
 	
-	constructor() {
-		// Internal
-		this.#tabStore = new TabStore(this);
+  constructor() {
+    // Internal
+    this.#tabStore = new TabStore(this);
 
-		this.files = new FileAPI(this);
-		this.entries = new EntryAPI(this);
-		this.selectedStore = new SelectedStore();
-		this.foldState = new FoldState();
-	}
+    this.files = new FileAPI(this);
+    this.entries = new EntryAPI(this);
+    this.selectedStore = new SelectedStore();
+    this.foldState = new FoldState();
+  }
 
-	async init() {
-		const tapeName = await getCurrentTape();
-		this.foldState.init(tapeName);
-	}
+  async init() {
+    const tapeName = await getCurrentTape();
+    this.foldState.init(tapeName);
+  }
 
-	/**
+  /**
 	 * @reactive Needs to be call inside a $derived or $effect
 	 * or read in a reactive context
 	 */
-	get tabs() {
-		return this.#tabStore.tabs;
-	}
+  get tabs() {
+    return this.#tabStore.tabs;
+  }
 
-	/**
+  /**
 	 * @reactive Needs to be call inside a $derived or $effect
 	 * or read in a reactive context
 	 */
-	get activeTab() {
-		return this.#tabStore.activeTab;
-	}
+  get activeTab() {
+    return this.#tabStore.activeTab;
+  }
 
-	isActiveTab(tabId: string) {
-		return this.#tabStore.activeTabId === tabId;
-	}
+  isActiveTab(tabId: string) {
+    return this.#tabStore.activeTabId === tabId;
+  }
 
-	async openFileAtPath(path: string, triggerHistory = true) {
-		const file = await this.files.getFile(path);
-		await this.openFile(file, triggerHistory);
-	}
+  async openFileAtPath(path: string, triggerHistory = true) {
+    const file = await this.files.getFile(path);
+    await this.openFile(file, triggerHistory);
+  }
 
-	async openFile(file: FileEntry, triggerHistory = true) {
-		// Open file in store (UI)
-		if (!this.#tabStore.tabs.find(t => t.kind === 'file' && t.id === file.path)) {
-			// Load content
-			const content = await this.files.readFile(file);
-			file.content = content;
+  async openFile(file: FileEntry, triggerHistory = true) {
+    // Open file in store (UI)
+    if (!this.#tabStore.tabs.find(t => t.kind === 'file' && t.id === file.path)) {
+      // Load content
+      const content = await this.files.readFile(file);
+      file.content = content;
 
-			const tabEntry = {
-				kind: TabKindEnum.FILE as const,
-				id: file.path,
-				file: file,
-				title: file.name
-			};
-			const oldTabId = this.activeTab?.id;
+      const tabEntry = {
+        kind: TabKindEnum.FILE as const,
+        id: file.path,
+        file: file,
+        title: file.name
+      };
+      const oldTabId = this.activeTab?.id;
 
-			this.#tabStore.openTab(tabEntry);
+      this.#tabStore.openTab(tabEntry);
 
-			if (triggerHistory) {
-				pushState('', {
-					oldTabId,
-					active: this.activeTab?.id
-				});
-			}
-		} else {
-			// If already opened, just activate it
-			await this.activateTab(file.path);
-		}
-	}
+      if (triggerHistory) {
+        pushState('', {
+          oldTabId,
+          active: this.activeTab?.id
+        });
+      }
+    } else {
+      // If already opened, just activate it
+      await this.activateTab(file.path);
+    }
+  }
 	
-	async openView(name: keyof typeof ViewMap, triggerHistory = true) {
-		const viewDef = ViewMap[name];
-		if (!viewDef) {
-			throw new Error(`View "${name}" not found in ViewMap`);
-		}
+  async openView(name: keyof typeof ViewMap, triggerHistory = true) {
+    const viewDef = ViewMap[name];
+    if (!viewDef) {
+      throw new Error(`View "${name}" not found in ViewMap`);
+    }
 
-		// Open view in store (UI)
-		if (!this.#tabStore.tabs.find(t => t.kind === 'view' && t.id === name)) {
-			const tabEntry = {
-				kind: TabKindEnum.VIEW as const,
-				id: name,
-				component: viewDef.component,
-				title: viewDef.title
-			};
-			const oldTabId = this.activeTab?.id;
+    // Open view in store (UI)
+    if (!this.#tabStore.tabs.find(t => t.kind === 'view' && t.id === name)) {
+      const tabEntry = {
+        kind: TabKindEnum.VIEW as const,
+        id: name,
+        component: viewDef.component,
+        title: viewDef.title
+      };
+      const oldTabId = this.activeTab?.id;
 
-			this.#tabStore.openTab(tabEntry);
+      this.#tabStore.openTab(tabEntry);
 
-			if (triggerHistory) {
-				pushState('', {
-					oldTabId,
-					active: this.activeTab?.id
-				});
-			}
-		} else {
-			// If already opened, just activate it
-			await this.activateTab(name);
-		}
-	}
+      if (triggerHistory) {
+        pushState('', {
+          oldTabId,
+          active: this.activeTab?.id
+        });
+      }
+    } else {
+      // If already opened, just activate it
+      await this.activateTab(name);
+    }
+  }
 
-	async activateTab(tabId: string) {
-		const tab = this.#tabStore.tabs.find(t => t.id === tabId);
-		if (!tab) return;
+  async activateTab(tabId: string) {
+    const tab = this.#tabStore.tabs.find(t => t.id === tabId);
+    if (!tab) return;
 
-		// Set the active tab in the store
-		this.#tabStore.activeTabId = tab.id;
+    // Set the active tab in the store
+    this.#tabStore.activeTabId = tab.id;
 
-		if (tab.kind === 'file') {
-			const content = await this.files.readFile(tab.file);
-			tab.file.content = content;
-		}
-	}
+    if (tab.kind === 'file') {
+      const content = await this.files.readFile(tab.file);
+      tab.file.content = content;
+    }
+  }
 
-	async closeTab(tabId: string, triggerHistory = true) {
-		const tab = this.#tabStore.tabs.find(t => t.id === tabId);
-		if (!tab) return;
+  async closeTab(tabId: string, triggerHistory = true) {
+    const tab = this.#tabStore.tabs.find(t => t.id === tabId);
+    if (!tab) return;
 
-		// Close the tab in the store
-		this.#tabStore.closeTab(tab.id);
+    // Close the tab in the store
+    this.#tabStore.closeTab(tab.id);
 
-		if (triggerHistory) {
-			pushState('', {
-				oldTabId: this.activeTab?.id,
-				active: tabId
-			});
-		}
-	}
+    if (triggerHistory) {
+      pushState('', {
+        oldTabId: this.activeTab?.id,
+        active: tabId
+      });
+    }
+  }
 
-	/**
+  /**
 	 * Method to sync changes between the server and the client
 	 * @fires {@linkcode CoreAPI.tabs}
 	 * @fires {@linkcode CoreAPI.activeTab}
 	 */
-	async syncStates(modifications: EntryModification[]) {
-		await this.#tabStore.syncModifications(modifications);
-		await this.foldState.syncModifications(modifications);
-	}
+  async syncStates(modifications: EntryModification[]) {
+    await this.#tabStore.syncModifications(modifications);
+    await this.foldState.syncModifications(modifications);
+  }
 
-	async clear() {
-		this.#tabStore.clear();
-		this.selectedStore.clear();
-		this.foldState.clear();
-	}
+  async clear() {
+    this.#tabStore.clear();
+    this.selectedStore.clear();
+    this.foldState.clear();
+  }
 }
 
 export type { CoreAPI };

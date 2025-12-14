@@ -2,13 +2,13 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-	return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs));
 }
 
 export function stopEvent(e: Event) {
-	e.stopPropagation();
-	e.preventDefault();
-	e.stopImmediatePropagation();
+  e.stopPropagation();
+  e.preventDefault();
+  e.stopImmediatePropagation();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -8,12 +8,12 @@ export * from './domEvents.js';
 export * from './theme.js';
 
 export const realtimeMarkdown: Extension[] = [
-	liveMarkdownPlugin,
-	domEventHandlers,
-	realtimeMarkdownTheme,
+  liveMarkdownPlugin,
+  domEventHandlers,
+  realtimeMarkdownTheme,
 ];
 
 export const realtimeMarkdownWithoutTheme: Extension[] = [
-	liveMarkdownPlugin,
-	domEventHandlers,
+  liveMarkdownPlugin,
+  domEventHandlers,
 ];

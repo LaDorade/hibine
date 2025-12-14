@@ -25,27 +25,27 @@ type DbClient = BetterSQLite3Database<typeof schema> & {
 
 let dbClient: DbClient | null = null;
 export function getDbClient(): DbClient {
-	if (dbClient) {
-		return dbClient;
-	}
+  if (dbClient) {
+    return dbClient;
+  }
 
-	if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+  if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 
-	// ensure directory exists
-	console.log('Using database at', env.DATABASE_URL);
-	mkdirSync(dirname(env.DATABASE_URL), { recursive: true });
+  // ensure directory exists
+  console.log('Using database at', env.DATABASE_URL);
+  mkdirSync(dirname(env.DATABASE_URL), { recursive: true });
 
-	// initialize database client (create file if it doesn't exist)
-	console.log('Initializing database client');
-	const client = new Database(env.DATABASE_URL, {
-		fileMustExist: false,
-	});
+  // initialize database client (create file if it doesn't exist)
+  console.log('Initializing database client');
+  const client = new Database(env.DATABASE_URL, {
+    fileMustExist: false,
+  });
 
-	dbClient = drizzle(client, { schema });
+  dbClient = drizzle(client, { schema });
 	
-	// migrate if needed
-	console.log('Running migrations');
-	migrate(dbClient, { migrationsFolder: './drizzle' });
+  // migrate if needed
+  console.log('Running migrations');
+  migrate(dbClient, { migrationsFolder: './drizzle' });
 
-	return dbClient;
+  return dbClient;
 }

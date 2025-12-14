@@ -106,3 +106,8 @@
   - Need to signal to the front that it's a folder (don't open a tab for it)
 - Stores are not cleaned when switching tape (eg: selectedStore, opentabs)
 - When creating a file within a folder -> the title client side is slugified and "/" are replaced with "_"
+- After closing a file from the tabslist, a click on it on the left bar doesnt open it
+- Cant rename with spaces + create a tab with the new AND the old name
+- URL's without "https://" are processed as local ULR's
+- Deleted file not removed from the tabs
+- After creating a file, the new tab created is bugged (cannot close it)

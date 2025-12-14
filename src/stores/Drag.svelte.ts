@@ -1,13 +1,13 @@
 class DragStore {
-	draggedItem: unknown | null = $state(null);
+  draggedItem: unknown | null = $state(null);
 
-	drag(item: unknown) {
-		this.draggedItem = $state.snapshot(item);
-	}
+  drag(item: unknown) {
+    this.draggedItem = $state.snapshot(item);
+  }
 
-	drop(): unknown {
-		return $state.snapshot(this.draggedItem);
-	}
+  drop(): unknown {
+    return $state.snapshot(this.draggedItem);
+  }
 }
 
 export const dragStore = new DragStore();

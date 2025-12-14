@@ -1,5 +1,5 @@
 import Settings from './Settings';
 
 export const ViewMap = {
-	[Settings.name] : Settings,
+  [Settings.name] : Settings,
 } as const;

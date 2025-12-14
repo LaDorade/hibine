@@ -2,53 +2,53 @@ import type { EntryModification } from '$types/modification';
 import { SvelteMap } from 'svelte/reactivity';
 
 export class FoldState {
-	private foldStates: SvelteMap<string, boolean> = new SvelteMap<string, boolean>();
+  private foldStates: SvelteMap<string, boolean> = new SvelteMap<string, boolean>();
 
-	private tapeName: string | null = null;
-	private storageKey: string | null = null;
+  private tapeName: string | null = null;
+  private storageKey: string | null = null;
 
-	init(tapeName: string) {
-		this.tapeName = tapeName;
-		this.storageKey = tapeName + '_folderState';
-		const folderState = JSON.parse(window.localStorage.getItem(this.storageKey) || '{}');
-		for (const [key, value] of Object.entries(folderState)) {
-			this.foldStates.set(key, Boolean(value));
-		}
-	}
+  init(tapeName: string) {
+    this.tapeName = tapeName;
+    this.storageKey = tapeName + '_folderState';
+    const folderState = JSON.parse(window.localStorage.getItem(this.storageKey) || '{}');
+    for (const [key, value] of Object.entries(folderState)) {
+      this.foldStates.set(key, Boolean(value));
+    }
+  }
 
-	isFolded(path: string): boolean {
-		return this.foldStates.get(path) ?? false;
-	}
+  isFolded(path: string): boolean {
+    return this.foldStates.get(path) ?? false;
+  }
 
-	toggleFold(path: string): void {
-		const currentState = this.foldStates.get(path) ?? false;
-		this.setFoldState(path, !currentState);
-	}
+  toggleFold(path: string): void {
+    const currentState = this.foldStates.get(path) ?? false;
+    this.setFoldState(path, !currentState);
+  }
 
-	setFoldState(path: string, state: boolean): void {
-		this.foldStates.set(path, state);
-		if (!this.storageKey && !this.tapeName) {
-			console.warn('Tape name is not set. Can\'t save fold state.');
-			return;
-		}
-		const folderState = JSON.parse(window.localStorage.getItem(this.storageKey!) || '{}');
-		folderState[path] = state;
-		window.localStorage.setItem(this.storageKey!, JSON.stringify(folderState));
-	}
+  setFoldState(path: string, state: boolean): void {
+    this.foldStates.set(path, state);
+    if (!this.storageKey && !this.tapeName) {
+      console.warn('Tape name is not set. Can\'t save fold state.');
+      return;
+    }
+    const folderState = JSON.parse(window.localStorage.getItem(this.storageKey!) || '{}');
+    folderState[path] = state;
+    window.localStorage.setItem(this.storageKey!, JSON.stringify(folderState));
+  }
 
-	clear(): void {
-		this.foldStates.clear();
-	}
+  clear(): void {
+    this.foldStates.clear();
+  }
 
-	async syncModifications(modifications: EntryModification[]): Promise<void> {
-		for (const mod of modifications) {
-			if ((mod.type === 'renamed' || mod.type === 'moved') && this.foldStates.has(mod.oldPath)) {
-				const state = this.foldStates.get(mod.oldPath)!;
-				this.foldStates.delete(mod.oldPath);
-				this.foldStates.set(mod.newPath, state);
-			} else if (mod.type === 'removed' && this.foldStates.has(mod.oldPath)) {
-				this.foldStates.delete(mod.oldPath);
-			}
-		}
-	}
+  async syncModifications(modifications: EntryModification[]): Promise<void> {
+    for (const mod of modifications) {
+      if ((mod.type === 'renamed' || mod.type === 'moved') && this.foldStates.has(mod.oldPath)) {
+        const state = this.foldStates.get(mod.oldPath)!;
+        this.foldStates.delete(mod.oldPath);
+        this.foldStates.set(mod.newPath, state);
+      } else if (mod.type === 'removed' && this.foldStates.has(mod.oldPath)) {
+        this.foldStates.delete(mod.oldPath);
+      }
+    }
+  }
 }
