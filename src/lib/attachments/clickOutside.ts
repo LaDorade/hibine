@@ -5,11 +5,11 @@ export function clickOutside(node: HTMLElement, onClickOutside: (node: HTMLEleme
     }
   };
 
-  document.addEventListener('click', handleClick, true);
+  document.addEventListener('mouseup', handleClick, true);
   document.addEventListener('contextmenu', handleClick, true);
 
   return () => {
-    document.removeEventListener('click', handleClick, true);
+    document.removeEventListener('mouseup', handleClick, true);
     document.removeEventListener('contextmenu', handleClick, true);
   };
 }

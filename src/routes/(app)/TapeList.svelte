@@ -28,7 +28,7 @@
         </i>
       </Card>
     {/snippet}
-    {#snippet failed(err: Error, reset: () => void)}
+    {#snippet failed(err, reset)}
       {@const error = err as Error}
       <Card type="button" onclick={reset} class="w-60 flex flex-col gap-4 justify-center items-center bg-red-800/30 rounded hover:bg-red-700/40 cursor-pointer">
         <span>
