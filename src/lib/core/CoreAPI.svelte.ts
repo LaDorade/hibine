@@ -137,7 +137,7 @@ class CoreAPI {
     if (!tab) return;
 
     // Close the tab in the store
-    this.#tabStore.closeTab(tab.id);
+    await this.#tabStore.closeTab(tab.id);
 
     if (triggerHistory) {
       pushState('', {

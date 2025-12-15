@@ -10,23 +10,14 @@
       newFileInput.focus();
     }
   }
-
-  async function enhanceForm({form, submit}: {form: HTMLFormElement, submit: () => Promise<void>}) {
-    try {
-      await submit();
-      form.reset();
-      if (!createFile.result) {
-        return;
-      }
-    } catch (error) {
-      console.error('Error creating file:', error);
-    }
-  }
 	
-  // TODO: refacto, this will retrigger when open the page
-	// This causes an issue when we close the created file
+  let lastCreatedPath = '';
   $effect(() => {
-    if (createFile.result && createFile.result.type === 'file') {
+    if (createFile.result && 
+      createFile.result.type === 'file' &&
+      lastCreatedPath !== createFile.result.path
+    ) {
+      lastCreatedPath = createFile.result.path;
       coreAPI.openFile(createFile.result);
     }
   });
@@ -34,7 +25,7 @@
 
 <div class="text-sm">
   <form
-    {...createFile.enhance(enhanceForm)}
+    {...createFile}
     class="flex flex-col w-full"
   >
     {#if createFile.fields.allIssues()?.length}

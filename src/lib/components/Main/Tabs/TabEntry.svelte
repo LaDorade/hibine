@@ -36,6 +36,7 @@
   }
 
   async function onTabClick(e: MouseEvent) {
+    stopEvent(e);
     if (e.button === 0) {
       await coreAPI.activateTab(tab.id);
     }
@@ -72,11 +73,12 @@
   <button
     onclick={onTabClick}
     onauxclick={onTabAuxClick}
-    class="flex grow h-full w-full items-center cursor-pointer font-medium
-      text-gray-200 transition-all duration-200 px-4 truncate text-ellipsis
-      {coreAPI.activeTab?.id === tab.id
-        ? 'text-green-100'
-        : 'hover:text-white'}"
+    class={[
+      'flex grow h-full w-full items-center cursor-pointer font-medium',
+      'text-gray-200 transition-all duration-200 px-4 truncate text-ellipsis',
+      coreAPI.activeTab?.id === tab.id ? 'text-green-100' : 'hover:text-white',
+      'border'
+    ]}
   >
     <div class="flex items-center text-sm gap-1 min-w-0">
       <!-- File name -->
