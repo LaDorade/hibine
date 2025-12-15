@@ -9,7 +9,8 @@ if (!NOTE_DIR) {
 }
 
 export function sanitizeFileName(name: string): string {
-  return name.trim().replace(/[^a-zA-Z0-9._-]/g, '_');
+  // unix and windows forbidden characters: / \ ? % * : | " < >
+  return name.trim().replace(/[/\\?%*:|"<>]/g, '_');
 }
 
 export function sanitizeFilePath(p: string): string {

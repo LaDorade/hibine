@@ -8,12 +8,36 @@ describe('files.utils', () => {
       const expected = 'invali__d_fi_le_name_.txt';
       expect(sanitizeFileName(input)).toBe(expected);
     });
+
+    it('should not modify valid file names', () => {
+      const input = 'valid-file_name.txt';
+      const expected = 'valid-file_name.txt';
+      expect(sanitizeFileName(input)).toBe(expected);
+    });
+
+    it('should allow spaces and dots', () => {
+      const input = ' my file.name ';
+      const expected = 'my file.name';
+      expect(sanitizeFileName(input)).toBe(expected);
+    });
+
+    it('should allow various valid characters', () => {
+      const input = 'file_name-123.@#$^&()[]{}';
+      const expected = 'file_name-123.@#$^&()[]{}';
+      expect(sanitizeFileName(input)).toBe(expected);
+    });
+
+    it ('should handle empty or whitespace-only names', () => {
+      const input = '     ';
+      const expected = '';
+      expect(sanitizeFileName(input)).toBe(expected);
+    });
   });
 
   describe('sanitizeFilePath', () => {
     it('should replace invalid characters with underscores and trim whitespace', () => {
       const input = ' snup/<<<dap/t@pe.md';
-      const expected = 'snup/___dap/t_pe.md';
+      const expected = 'snup/___dap/t@pe.md';
       expect(sanitizeFilePath(input)).toBe(expected);
     });
   });
@@ -57,7 +81,7 @@ describe('files.utils', () => {
     vi.mock('$app/server');
     it('should return a valid path', () => {
       let input = ' snup/<<<dap/t@pe.md';
-      let expected ='test-data/testing_tape/snup/___dap/t_pe.md'; 
+      let expected ='test-data/testing_tape/snup/___dap/t@pe.md'; 
       expect(getValidPathInTape(input)).toBe(expected);
 
       input = '../../../im@silly';
