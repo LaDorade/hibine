@@ -100,14 +100,13 @@
 
 - Click event on the Drawer closes the drawer when we click on a folder (not the "touch" event)
 - $derived(await ...) sometimes does not refresh the content (likely a Svelte issue)
-- after creating a file, we cannot close the tab -> instant reopened (must reload the page)
-- Cant really create folder directly (eg: "test/"), will throw an error (call of writeFile)
-  - Need to check if the path ends with "/" and create the folder instead of a file
-  - Need to signal to the front that it's a folder (don't open a tab for it)
-- Stores are not cleaned when switching tape (eg: selectedStore, opentabs)
-- When creating a file within a folder -> the title client side is slugified and "/" are replaced with "_"
 - After closing a file from the tabslist, a click on it on the left bar doesnt open it
 - Cant rename with spaces + create a tab with the new AND the old name
 - URL's without "https://" are processed as local ULR's
 - Deleted file not removed from the tabs
-- After creating a file, the new tab created is bugged (cannot close it)
+- [x] Stores are not cleaned when switching tape (eg: selectedStore, opentabs)
+- [x] Cant really create folder directly (eg: "test/"), will throw an error (call of writeFile)
+  - [x] Need to check if the path ends with "/" and create the folder instead of a file
+  - [x] Need to signal to the front that it's a folder (don't open a tab for it)
+- [x] When creating a file within a folder -> the title client side is slugified and "/" are replaced with "_"
+- [x] After creating a file, the new tab created is bugged (cannot close it)
