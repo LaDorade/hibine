@@ -1,6 +1,6 @@
-import type { FileEntry, FileTree } from '$types/files';
+import type { FileEntry, FsNode } from '$types/files';
 
 export type TapeFileStore = () => {
-    tapeEntries: FileTree[];
+    tapeEntries: FsNode[];
     tapeFiles: FileEntry[];
 }

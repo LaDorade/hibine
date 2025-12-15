@@ -3,7 +3,7 @@
   import * as Command from '$lib/components/ui/command';
   import { getFileTree } from '$lib/remotes/files.remote';
   import { computeCommandScore } from 'bits-ui';
-  import type { FileEntry, FileTree } from '$types/files';
+  import type { FileEntry, FsNode } from '$types/files';
 
   interface Props {
     searchBarOpen: boolean;
@@ -23,7 +23,7 @@
 
   // TODO: move to a utility file
   function toFlattenFiles(
-    files: FileTree[],
+    files: FsNode[],
     parentPath: string = '',
   ): FileEntry[] {
     let flatList: FileEntry[] = [];

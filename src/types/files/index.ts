@@ -2,10 +2,10 @@ type Entry = {
     name: string;
     path: string;
     type: 'file' | 'dir';
-    childs: FileTree[] | null;
+    childs: FsNode[] | null;
 }
 
-export type FileTree = FileEntry | FolderEntry;
+export type FsNode = FileEntry | FolderEntry;
 
 export type FileEntry = Entry & {
     type: 'file';
@@ -15,7 +15,7 @@ export type FileEntry = Entry & {
 
 export type FolderEntry = Entry & {
     type: 'dir';
-    childs: FileTree[];
+    childs: FsNode[];
 }
 
 export type FileWithContent = FileEntry & {

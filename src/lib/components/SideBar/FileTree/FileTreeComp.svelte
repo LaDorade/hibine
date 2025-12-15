@@ -3,14 +3,14 @@
   import FolderEntry from './FolderEntry.svelte';
   import { dropAndMove } from '$lib/attachments/drop';
   import { getFileTree, getCurrentTape } from '$lib/remotes/files.remote';
-  import type { FileTree } from '$types/files';
+  import type { FsNode } from '$types/files';
   import { stopEvent } from '$lib/utils';
 
   let tree = $derived(await getFileTree() ?? []);
   let files = $derived(sortFileTree(tree));
 
   // TODO: use design pattern strategy for multiple sorting methods
-  function sortFileTree(entries: FileTree[]): FileTree[] {
+  function sortFileTree(entries: FsNode[]): FsNode[] {
     let fileTree = entries.toSorted((a, b) => {
       if (a.type === b.type) {
         return a.name.localeCompare(b.name);

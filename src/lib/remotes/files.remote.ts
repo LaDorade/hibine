@@ -8,12 +8,12 @@ import { command, form, getRequestEvent, query } from '$app/server';
 import { createFileTree } from '$lib';
 import { env } from '$env/dynamic/private';
 import { getRelativePathFromTape, getValidPathInTape, sanitizeFileName } from './files.utils';
-import type { FileEntry, FileTree } from '$types/files';
+import type { FileEntry, FsNode } from '$types/files';
 import type { EntryModification } from '$types/modification';
 
 const NOTE_DIR = env.NOTE_DIR;
 
-export const getFileTree = query(async (): Promise<FileTree[]> => {
+export const getFileTree = query(async (): Promise<FsNode[]> => {
   const { params } = getRequestEvent();
   const tape = params.tape;
   if (!tape) {
@@ -73,17 +73,29 @@ export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry
 
 export const createFile = form(z.object({
   fileName: z.string()
-}), async ( {fileName}, invalid): Promise<FileEntry> => {
+}), async ( {fileName}, invalid): Promise<FsNode> => {
   if (!fileName.trim() || /[<>:"|?*]/.test(fileName)) {
     return invalid(invalid.fileName(`Invalid file name: ${fileName}`));
   }
 
   const saneFilePath = getValidPathInTape(fileName);
-  const newFilename = sanitizeFileName(fileName);
+  const newFilename = sanitizeFileName(fileName.split('/').pop() || 'untitled');
 
   const {params} = getRequestEvent();
   if (!params.tape) {
     throw error(400, 'Tape parameter is missing');
+  }
+
+  if (saneFilePath.endsWith('/')) {
+    await mkdir(saneFilePath, { recursive: true });
+    await getFileTree().refresh();
+    console.info(`Created directory at ${saneFilePath}`);
+    return {
+      name: newFilename,
+      path: getRelativePathFromTape(saneFilePath),
+      type: 'dir',
+      childs: []
+    };
   }
 
   if (existsSync(saneFilePath)) {
@@ -94,6 +106,7 @@ export const createFile = form(z.object({
     await mkdir(dirname(saneFilePath), { recursive: true });
     // Créer le fichier
     await writeFile(saneFilePath, '', 'utf-8');
+    console.info(`Created file at ${saneFilePath}`);
   } catch (err) {
     console.error('Error creating file:', err);
     return invalid(invalid.fileName('Error creating file'));

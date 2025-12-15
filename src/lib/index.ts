@@ -1,10 +1,10 @@
-import type { FileTree } from '$types/files';
+import type { FsNode } from '$types/files';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-export async function createFileTree(parentPath: string): Promise<FileTree[]> {
+export async function createFileTree(parentPath: string): Promise<FsNode[]> {
   const entries = await readdir(parentPath, { withFileTypes: true });
-  const childs: FileTree[] = [];
+  const childs: FsNode[] = [];
 
   await Promise.all(entries.map(async (e) => {
     const entryPath = getRelativeFilePath(path.join(parentPath, e.name));

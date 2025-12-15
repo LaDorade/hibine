@@ -26,7 +26,7 @@
   // TODO: refacto, this will retrigger when open the page
 	// This causes an issue when we close the created file
   $effect(() => {
-    if (createFile.result) {
+    if (createFile.result && createFile.result.type === 'file') {
       coreAPI.openFile(createFile.result);
     }
   });
