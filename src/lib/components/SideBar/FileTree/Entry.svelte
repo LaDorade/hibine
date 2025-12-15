@@ -43,7 +43,7 @@
         'hover:bg-gray-600 hover:border-green-500',
         'transition-all duration-150 w-full',
         'data-[active=true]:bg-green-400/10',
-        'focus:outline-none focus:bg-green-400/20',
+        'focus:outline-none',
         className
       ]}
       {...props}

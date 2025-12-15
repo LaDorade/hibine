@@ -81,6 +81,7 @@ export class TabStore {
           if (tab.kind === 'file') {
             tab.title = tabName;
             tab.file.name = tabName;
+            tab.file.path = change.newPath;
           }
           if (this.activeTabId === change.oldPath) {
             this.activeTabId = change.newPath;
