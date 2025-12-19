@@ -5,7 +5,12 @@
 
 </script>
 
-{#each coreAPI.tabs as tab (tab.id)}
+<!-- 
+Can't use tab.id as a key, it causes some reactive issues 
+The active tab editor will be destroyed but not remounted and so showing blank.
+TODO: Maybe a svelte issue?
+-->
+{#each coreAPI.tabs as tab, index (index)}
   <div
     class={['overscroll-none overflow-hidden border-2 border-black',
       'shadow-[4px_4px] shadow-black',
@@ -19,7 +24,7 @@
     id={'tabpanel-' + tab.id}
   >
     {#if tab.kind === 'file'}
-      <EditorRenderer bind:entry={tab.file} />
+      <EditorRenderer file={tab.file} />
     {:else if tab.kind === 'view'}
       <ViewRenderer entry={tab} />
     {:else}

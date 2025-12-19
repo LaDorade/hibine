@@ -43,6 +43,7 @@ export class TabStore {
       this.tabs.push(tab);
     }
     this.activeTabId = tab.id;
+    this.tabs = [...this.tabs];
   }
   async closeTab(tabId: string) {
     const afterTabs = this.tabs.filter(t => t.id !== tabId);
@@ -64,40 +65,51 @@ export class TabStore {
         for (const tab of linkedTabs) {
           const relativePath = tab.id.slice(change.oldPath.length);
           const newPath = change.newPath + relativePath;
-          tab.id = newPath;
+          
           if (tab.kind === 'file') {
-            tab.title = newPath.split('/').pop() || tab.title;
             tab.file.path = newPath;
           }
+          tab.id = newPath;
+
           if (this.activeTabId?.startsWith(change.oldPath)) {
-            this.activeTabId = newPath;
+            this.activeTabId = tab.id;
           }
         }
+        this.tabs = [...this.tabs];
       } else if (change.type === 'renamed') {
-        const tab = this.tabs.find(f => f.id === change.oldPath);
+        let tab = this.tabs.find(f => f.id === change.oldPath);
         const tabName = change.newPath.split('/').pop();
         if (tab && tabName) {
-          tab.id = change.newPath;
           if (tab.kind === 'file') {
-            tab.title = tabName;
-            tab.file.name = tabName;
-            tab.file.path = change.newPath;
+            tab = {
+              ...tab,
+              title: tabName,
+              file: {
+                ...tab.file,
+                name: tabName,
+                path: change.newPath,
+              }
+            };
           }
+          tab.id = change.newPath;
+
           if (this.activeTabId === change.oldPath) {
             this.activeTabId = change.newPath;
           }
+
+          this.tabs = [...this.tabs.map(f => f.id === change.oldPath ? tab! : f)];
         }
       } else if (change.type === 'removed') {
         if (change.isFolder) {
+          this.tabs = this.tabs.filter(f => !f.id.startsWith(change.oldPath));
           if (this.activeTabId?.startsWith(change.oldPath)) {
             await this.closeTab(this.activeTabId);
           }
-          this.tabs = this.tabs.filter(f => !f.id.startsWith(change.oldPath));
         } else {
+          this.tabs = this.tabs.filter(f => f.id !== change.oldPath);
           if (this.activeTabId === change.oldPath) {
             await this.closeTab(this.activeTabId);
           }
-          this.tabs = this.tabs.filter(f => f.id !== change.oldPath);
         }
       }
     }

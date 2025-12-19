@@ -1,10 +1,10 @@
 <script lang="ts">
   import { coreAPI } from '$core/CoreAPI.svelte';
-  import { liveMarkdown } from '$lib/Editors';
+  import LiveMarkdown from '$lib/Editors/LiveMarkdown/LiveMarkdown.svelte';
   import { settings } from '$stores/Settings.svelte';
   import type { FileEntry } from '$types/files';
 
-  let { entry = $bindable() }: { entry: FileEntry } = $props();
+  let { file }: { file: FileEntry } = $props();
 
   // Debounce the writeToFile calls
   let timeout: NodeJS.Timeout | null = null;
@@ -27,9 +27,14 @@
       }
     }, 500);
   }
-  const MdEditor = liveMarkdown.component;
+
+  // ensure file content is synced client-side during HMR
+  import.meta.hot?.dispose(async () => {
+    if (timeout) clearTimeout(timeout);
+    file.content = await coreAPI.files.readFile(file);
+  });
 </script>
 
 <div class="h-full overflow-hidden">
-  <MdEditor file={entry} {handleContentChange} />
+  <LiveMarkdown {file} {handleContentChange} />
 </div>

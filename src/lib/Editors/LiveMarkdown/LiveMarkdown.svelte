@@ -5,14 +5,14 @@
   import { lineNumbers, ViewPlugin, type ViewUpdate } from '@codemirror/view';
   import { EditorView } from 'codemirror';
   import { realtimeMarkdown } from './src';
-  import { onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick } from 'svelte';
   import type { FileEntry } from '$types/files';
 
   interface Props {
     file: FileEntry;
     handleContentChange: (file: FileEntry) => Promise<void>;
   }
-  let { file = $bindable(), handleContentChange }: Props = $props();
+  let { file, handleContentChange }: Props = $props();
 
   let dom: HTMLElement = $state()!;
   let cm: EditorView | null = null;
@@ -58,7 +58,7 @@
     },
   );
 
-  onMount(() => {
+  onMount(async () => {
     cm = new EditorView({
       parent: dom,
       doc: file.content ?? '',
@@ -72,7 +72,13 @@
       ],
     });
 
-    tick().then(autofocus);
+    await tick();
+    autofocus();
+  });
+
+  onDestroy(() => {
+    cm?.destroy();
+    cm = null;
   });
 
   function autofocus() {
