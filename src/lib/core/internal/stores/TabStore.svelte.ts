@@ -59,60 +59,90 @@ export class TabStore {
   }
 
   async syncModifications(changes: EntryModification[]) {
+    let updatedTabs = this.tabs;
+    let newActiveTabId = this.activeTabId;
+
     for (const change of changes) {
       if (change.type === 'moved' || (change.type === 'renamed' && change.isFolder)) {
-        const linkedTabs = this.tabs.filter(f => f.id.startsWith(change.oldPath));
-        for (const tab of linkedTabs) {
+        updatedTabs = updatedTabs.map(tab => {
+          if (!tab.id.startsWith(change.oldPath)) return tab;
+
           const relativePath = tab.id.slice(change.oldPath.length);
           const newPath = change.newPath + relativePath;
-          
-          if (tab.kind === 'file') {
-            tab.file.path = newPath;
-          }
-          tab.id = newPath;
+          const newName = newPath.split('/').pop() || tab.title;
 
-          if (this.activeTabId?.startsWith(change.oldPath)) {
-            this.activeTabId = tab.id;
-          }
-        }
-        this.tabs = [...this.tabs];
-      } else if (change.type === 'renamed') {
-        let tab = this.tabs.find(f => f.id === change.oldPath);
-        const tabName = change.newPath.split('/').pop();
-        if (tab && tabName) {
-          if (tab.kind === 'file') {
-            tab = {
+          if (tab.kind === TabKindEnum.FILE) {
+            return {
               ...tab,
-              title: tabName,
+              id: newPath,
+              title: newName,
               file: {
                 ...tab.file,
-                name: tabName,
+                name: newName,
+                path: newPath,
+              }
+            };
+          } else {
+            return {
+              ...tab,
+              id: newPath,
+              title: newName,
+            };
+          }
+        });
+
+        if (newActiveTabId?.startsWith(change.oldPath)) {
+          const relativePath = newActiveTabId.slice(change.oldPath.length);
+          newActiveTabId = change.newPath + relativePath;
+        }
+
+      } else if (change.type === 'renamed' && !change.isFolder) {
+        const newName = change.newPath.split('/').pop();
+        if (!newName) continue;
+
+        updatedTabs = updatedTabs.map(tab => {
+          if (tab.id !== change.oldPath) return tab;
+
+          if (tab.kind === TabKindEnum.FILE) {
+            return {
+              ...tab,
+              id: change.newPath,
+              title: newName,
+              file: {
+                ...tab.file,
+                name: newName,
                 path: change.newPath,
               }
             };
+          } else {
+            return {
+              ...tab,
+              id: change.newPath,
+              title: newName,
+            };
           }
-          tab.id = change.newPath;
+        });
 
-          if (this.activeTabId === change.oldPath) {
-            this.activeTabId = change.newPath;
-          }
-
-          this.tabs = [...this.tabs.map(f => f.id === change.oldPath ? tab! : f)];
+        if (newActiveTabId === change.oldPath) {
+          newActiveTabId = change.newPath;
         }
+
       } else if (change.type === 'removed') {
-        if (change.isFolder) {
-          this.tabs = this.tabs.filter(f => !f.id.startsWith(change.oldPath));
-          if (this.activeTabId?.startsWith(change.oldPath)) {
-            await this.closeTab(this.activeTabId);
-          }
-        } else {
-          this.tabs = this.tabs.filter(f => f.id !== change.oldPath);
-          if (this.activeTabId === change.oldPath) {
-            await this.closeTab(this.activeTabId);
-          }
+        const shouldRemove = change.isFolder
+          ? (tab: TabEntry) => tab.id.startsWith(change.oldPath)
+          : (tab: TabEntry) => tab.id === change.oldPath;
+
+        const tabsToRemove = updatedTabs.filter(shouldRemove);
+        updatedTabs = updatedTabs.filter(tab => !shouldRemove(tab));
+
+        if (tabsToRemove.some(tab => tab.id === newActiveTabId)) {
+          newActiveTabId = updatedTabs.length > 0 ? updatedTabs[0].id : null;
         }
       }
     }
+
+    this.tabs = updatedTabs;
+    this.activeTabId = newActiveTabId;
   }
 
   clear() {

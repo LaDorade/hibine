@@ -88,7 +88,7 @@ export const createFile = form(z.object({
 
   if (saneFilePath.endsWith('/')) {
     await mkdir(saneFilePath, { recursive: true });
-    await getFileTree().refresh();
+    await await getFileTree().refresh();
     console.info(`Created directory at ${saneFilePath}`);
     return {
       name: newFilename,
@@ -215,7 +215,6 @@ export const moveEntry = command(z.object({
   }
 
   await move(saneEntryPath, newEntryPath);
-  await getFileTree().refresh();
 	
   const isFolder = await lstat(newEntryPath).then(stats => stats.isDirectory()).catch(() => false);
   const modifications = [{
@@ -226,6 +225,7 @@ export const moveEntry = command(z.object({
   }] satisfies EntryModification[];
   console.log(modifications);
 
+  await getFileTree().refresh();
   return modifications;
 });
 
@@ -243,8 +243,7 @@ export const renameEntry = command(z.object({
   }
 
   await move(saneEntryPath, newPath);
-  await getFileTree().refresh();
-
+	
   const isFolder = await lstat(newPath).then(stats => stats.isDirectory()).catch(() => false);
   const modifications = [{
     type: 'renamed',
@@ -254,6 +253,7 @@ export const renameEntry = command(z.object({
   }] satisfies EntryModification[];
   console.log(modifications);
 	
+  await getFileTree().refresh();
   return modifications;
 });
 
@@ -265,7 +265,6 @@ export const removeEntry = command(z.object({
   const isFolder = stats.isDirectory();
 
   await rm(saneEntryPath, { recursive: true, force: true });
-  await getFileTree().refresh();
 
   const modifications = [{
     type: 'removed',
@@ -275,5 +274,6 @@ export const removeEntry = command(z.object({
   }] satisfies EntryModification[];
   console.log(modifications);
 
+  await getFileTree().refresh();
   return modifications;
 });
