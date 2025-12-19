@@ -16,8 +16,11 @@ export class FoldState {
     }
   }
 
-  isFolded(path: string): boolean {
-    return this.foldStates.get(path) ?? false;
+  isOpen(path: string): boolean {
+    return this.foldStates.get(path) ?? 
+			true; 
+    // Default to open (weird issues with closed folders on first load)
+    // Right click will not work
   }
 
   toggleFold(path: string): void {

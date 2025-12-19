@@ -17,7 +17,7 @@
 
   let { entry }: Props = $props();
 
-  let isOpen = $derived(coreAPI.foldState.isFolded(entry.path));
+  let isOpen = $derived(coreAPI.foldState.isOpen(entry.path));
 
   async function handleClick(e: MouseEvent) {
     e.preventDefault();

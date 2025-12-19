@@ -104,6 +104,7 @@
 - Cant rename with spaces + create a tab with the new AND the old name
 - URL's without "https://" are processed as local ULR's
 - Deleted file not removed from the tabs
+- [x] right click isn't working in a folder
 - [x] Stores are not cleaned when switching tape (eg: selectedStore, opentabs)
 - [x] Cant really create folder directly (eg: "test/"), will throw an error (call of writeFile)
   - [x] Need to check if the path ends with "/" and create the folder instead of a file
