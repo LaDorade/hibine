@@ -101,9 +101,10 @@
 - Click event on the Drawer closes the drawer when we click on a folder (not the "touch" event)
 - $derived(await ...) sometimes does not refresh the content (likely a Svelte issue)
 - After closing a file from the tabslist, a click on it on the left bar doesnt open it
-- Cant rename with spaces + create a tab with the new AND the old name
 - URL's without "https://" are processed as local ULR's
+- Cant rename with spaces + create a tab with the new AND the old name
 - Deleted file not removed from the tabs
+- Rename a file who is open in tab, will just show a empty window
 - [x] right click isn't working in a folder
 - [x] Stores are not cleaned when switching tape (eg: selectedStore, opentabs)
 - [x] Cant really create folder directly (eg: "test/"), will throw an error (call of writeFile)
