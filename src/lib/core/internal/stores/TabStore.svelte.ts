@@ -53,6 +53,7 @@ export class TabStore {
         this.core.activateTab(newActiveTab.id);
       } else {
         this.activeTabId = null;
+        this.core.pageStore.syncPage(null);
       }
     }
     this.tabs = afterTabs;

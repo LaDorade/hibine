@@ -1,4 +1,4 @@
-import { pushState } from '$app/navigation';
+import { pushState, replaceState } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { type CoreAPI } from './CoreAPI.svelte';
 import { getCurrentTape } from '$lib/remotes/files.remote';
@@ -27,8 +27,14 @@ export class Page {
 	 */
   async syncPage(id?: string | null) {
     // TODO: refacto to use URL classe (handle multiple params)
+    const url = new SvelteURL(window.location.href);
+    if (!id) {
+      url.searchParams.delete('active');
+    } else {
+      url.searchParams.set('active', id ? encodeURIComponent(id) : '');
+    }
     //@ts-expect-error - SvelteURL type issue
-    const newUrl = resolve(`/tape/[tape]?active=${encodeURIComponent(id ?? '')}`, {
+    const newUrl = resolve(`/tape/[tape]?${url.searchParams.toString()}`, {
       tape: await getCurrentTape()
     });
     pushState(newUrl, {});
