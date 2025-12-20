@@ -1,13 +1,12 @@
-import { pushState } from '$app/navigation';
-
 import { FileAPI } from './internal/FileAPI.svelte';
 import { EntryAPI } from './internal/EntryAPI.svelte';
 import { TabKindEnum, TabStore } from './internal/stores/TabStore.svelte';
 import { FoldState } from '$core/internal/FoldState.svelte';
-import type { FileEntry } from '$types/files';
-import type { EntryModification } from '$types/modification';
 import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
+import { Page } from './Page.svelte';
+import type { FileEntry } from '$types/files';
+import type { EntryModification } from '$types/modification';
 
 
 class CoreAPI {
@@ -16,6 +15,7 @@ class CoreAPI {
   readonly files: FileAPI;
   readonly entries: EntryAPI;
   readonly foldState: FoldState;
+  readonly pageStore: Page;
 	
 	
   constructor() {
@@ -25,11 +25,13 @@ class CoreAPI {
     this.files = new FileAPI(this);
     this.entries = new EntryAPI(this);
     this.foldState = new FoldState();
+    this.pageStore = new Page(this);
   }
 
   async init() {
     const tapeName = await getCurrentTape();
     this.foldState.init(tapeName);
+    this.pageStore.init();
   }
 
   /**
@@ -70,19 +72,13 @@ class CoreAPI {
         file: file,
         title: file.name
       };
-      const oldTabId = this.activeTab?.id;
-
       this.#tabStore.openTab(tabEntry);
-
       if (triggerHistory) {
-        pushState('', {
-          oldTabId,
-          active: this.activeTab?.id
-        });
+        this.pageStore.syncPage(file.path);
       }
     } else {
       // If already opened, just activate it
-      await this.activateTab(file.path);
+      await this.activateTab(file.path, triggerHistory);
     }
   }
 	
@@ -100,23 +96,19 @@ class CoreAPI {
         component: viewDef.component,
         title: viewDef.title
       };
-      const oldTabId = this.activeTab?.id;
 
       this.#tabStore.openTab(tabEntry);
 
       if (triggerHistory) {
-        pushState('', {
-          oldTabId,
-          active: this.activeTab?.id
-        });
+        this.pageStore.syncPage(name);
       }
     } else {
       // If already opened, just activate it
-      await this.activateTab(name);
+      await this.activateTab(name, triggerHistory);
     }
   }
 
-  async activateTab(tabId: string) {
+  async activateTab(tabId: string, triggerHistory = true) {
     const tab = this.#tabStore.tabs.find(t => t.id === tabId);
     if (!tab) return;
 
@@ -127,21 +119,17 @@ class CoreAPI {
       const content = await this.files.readFile(tab.file);
       tab.file.content = content;
     }
+    if (triggerHistory) {
+      this.pageStore.syncPage(tab.id);
+    }
   }
 
-  async closeTab(tabId: string, triggerHistory = true) {
+  async closeTab(tabId: string) {
     const tab = this.#tabStore.tabs.find(t => t.id === tabId);
     if (!tab) return;
 
     // Close the tab in the store
     await this.#tabStore.closeTab(tab.id);
-
-    if (triggerHistory) {
-      pushState('', {
-        oldTabId: this.activeTab?.id,
-        active: tabId
-      });
-    }
   }
 
   /**

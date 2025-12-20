@@ -5,9 +5,8 @@
   import { viewportStore } from '$stores/Viewport.svelte.js';
   import { getCurrentTape } from '$lib/remotes/files.remote';
   import { stopEvent } from '$lib/utils';
-  import { page } from '$app/state';
   import { coreAPI } from '$core/CoreAPI.svelte';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
   let searchBarOpen: boolean = $state(false);
 
@@ -33,14 +32,8 @@
 </script>
 
 <svelte:window onkeydown={handleKeys} onpopstate={async () => {
-  await tick();
-  if (page.state.active && page.state.active !== coreAPI.activeTab?.id) {
-    coreAPI.openFileAtPath(page.state.active, false);
-  } else {
-    if (page.state.oldTabId && page.state.oldTabId !== coreAPI.activeTab?.id) {
-      coreAPI.openFileAtPath(page.state.oldTabId, false);
-    }
-  }} }/>
+  await coreAPI.pageStore.openFromUrl();
+}} />
 
 {#if !viewportStore.isMobile}
   <SearchBar bind:searchBarOpen />
