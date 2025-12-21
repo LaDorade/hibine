@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { coreAPI } from '$core/CoreAPI.svelte';
   import { settings } from '$stores/Settings.svelte';
 </script>
 
@@ -9,17 +10,27 @@
       'bg-gray-800',
       'border-4 border-black border-b-0',
       'shadow-[4px_4px] shadow-black',
-      'font-light text-sm'
+      'font-light text-sm',
+      'text-gray-400',
+      'text-xs',
+      'group'
     ]}
   >
-    {#if settings.saveSet.saving}
-      <span class="text-gray-500">
-        Saving...
-      </span>
-    {:else}
-      <span class="text-gray-400">
-        Status: All changes saved
-      </span>
-    {/if}
+    {#key coreAPI.infoUi.lastMessage}
+      <div class={['italic animate-fadeout group-hover:animate-none']}>
+        {coreAPI.infoUi.lastMessage}
+      </div>
+    {/key}
+    <div>
+      {#if settings.saveSet.saving}
+        <span class="text-gray-500">
+          Saving...
+        </span>
+      {:else}
+        <span class="text-gray-400">
+          All changes saved
+        </span>
+      {/if}
+    </div>
   </div>
 </div>

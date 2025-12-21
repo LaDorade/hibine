@@ -5,6 +5,7 @@ import { FoldState } from '$core/internal/FoldState.svelte';
 import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
 import { Page } from './Page.svelte';
+import { InfoUi } from './InfosUi.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 
@@ -17,6 +18,7 @@ class CoreAPI {
   readonly foldState: FoldState;
   readonly pageStore: Page;
 	
+  readonly infoUi: InfoUi;
 	
   constructor() {
     // Internal
@@ -26,6 +28,8 @@ class CoreAPI {
     this.entries = new EntryAPI(this);
     this.foldState = new FoldState();
     this.pageStore = new Page(this);
+
+    this.infoUi = new InfoUi(this);
   }
 
   async init() {
@@ -74,7 +78,7 @@ class CoreAPI {
       };
       this.#tabStore.openTab(tabEntry);
       if (triggerHistory) {
-        this.pageStore.syncPage(file.path);
+        this.pageStore.pushPage(file.path);
       }
     } else {
       // If already opened, just activate it
@@ -100,7 +104,7 @@ class CoreAPI {
       this.#tabStore.openTab(tabEntry);
 
       if (triggerHistory) {
-        this.pageStore.syncPage(name);
+        this.pageStore.pushPage(name);
       }
     } else {
       // If already opened, just activate it
@@ -120,7 +124,7 @@ class CoreAPI {
       tab.file.content = content;
     }
     if (triggerHistory) {
-      this.pageStore.syncPage(tab.id);
+      this.pageStore.pushPage(tab.id);
     }
   }
 
@@ -140,6 +144,10 @@ class CoreAPI {
   async syncStates(modifications: EntryModification[]) {
     await this.#tabStore.syncModifications(modifications);
     await this.foldState.syncModifications(modifications);
+
+    for (const mod of modifications) {
+      this.infoUi.addModificationMessage(mod);
+    }
   }
 
   async clear() {
