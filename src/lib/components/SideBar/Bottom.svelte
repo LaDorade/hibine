@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createFile } from '$lib/remotes/files.remote';
   import { coreAPI } from '$core/CoreAPI.svelte';
-  import { FilePlus, FolderPlus, Plus, Settings, X } from '@lucide/svelte';
+  import { Plus, X } from '@lucide/svelte';
 
   let newFileInput: HTMLInputElement | null = $state(null);
 
@@ -36,14 +36,15 @@
         <button type="button" onclick={() => {
           createFile.validate();
           focusInput();
-        }}>
+        }} class={['px-2']}>
           <X
+            strokeWidth={2}
             class="w-4 h-4 text-gray-400 hover:text-gray-200 cursor-pointer"
           />
         </button>
       </div>
     {/if}
-    <div class="pb-2 pl-4 pr-2 flex justify-between items-center gap-4">
+    <div class="pb-4 px-4 flex justify-between gap-2">
       <input
         data-testid="new-entry-input"
         bind:this={newFileInput}
@@ -54,56 +55,22 @@
         }
         placeholder="New file/folder..."
         autocomplete="off"
-        class="w-full p-2 py-1 bg-gray-700
-          text-gray-400
-          focus:text-gray-200
-          hover:ring-green-500 transition-all
-          rounded-md focus:outline-none
-          peer focus:ring-1 focus:ring-green-500
-        "
+        class={['p-2 w-full bg-gray-800 focus:outline-none transition-all',
+          'shadow-[2px_2px] shadow-black border border-black',
+          'focus:shadow-[1px_1px] focus:bg-gray-900',
+        ]}
       />
       <button
         data-testid="create-entry-button"
         {...createFile.buttonProps}
-        class="cursor-pointer w-8 h-8 p-1 flex justify-center items-center rounded-lg
-          hover:bg-gray-600 hover:border-green-500 transition-all"
+        class={['p-2 flex justify-center items-center',
+          'bg-gray-800 hover:bg-gray-700 border border-black',
+          'shadow-[2px_2px] shadow-black hover:shadow-[1px_1px] transition-all',
+          'cursor-pointer hover:bg-gray-900'
+        ]}
       >
-        <Plus strokeWidth={1} class="text-gray-200" />
+        <Plus strokeWidth={2} class="text-gray-400" />
       </button>
     </div>
   </form>
-
-  <div
-    class={['p-2 flex items-center justify-between gap-2',
-      'border-t-4 border-black',
-      'transition-all duration-150',
-    ]}
-  >
-    <div class="flex gap-2 items-center">
-      <button
-        onclick={() => focusInput()}
-        class="cursor-pointer w-8 h-8 p-1 flex justify-center items-center rounded-lg
-          hover:bg-gray-600 hover:border-green-500 transition-all"
-      >
-        <FilePlus strokeWidth={1} class="text-gray-200" />
-      </button>
-      <button
-        onclick={() => focusInput()}
-        class="cursor-pointer w-8 h-8 p-1 flex justify-center items-center rounded-lg
-          hover:bg-gray-600 hover:border-green-500 transition-all"
-      >
-        <FolderPlus strokeWidth={1} class="text-gray-200" />
-      </button>
-    </div>
-    <button
-      onclick={() => coreAPI.openView('settings')}
-      class={[
-        'w-8 h-8 p-1 flex justify-center items-center rounded-lg',
-        'backdrop-hue-rotate-90',
-        'hover:bg-white/10 hover:border-green-500 transition-all cursor-pointer'
-      ]}
-    >
-      <Settings strokeWidth={1} class="text-gray-200" />
-    </button>
-  </div>
 </div>
