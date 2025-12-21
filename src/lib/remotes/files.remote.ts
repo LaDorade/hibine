@@ -88,7 +88,7 @@ export const createFile = form(z.object({
 
   if (saneFilePath.endsWith('/')) {
     await mkdir(saneFilePath, { recursive: true });
-    await await getFileTree().refresh();
+    await getFileTree().refresh();
     console.info(`Created directory at ${saneFilePath}`);
     return {
       name: newFilename,
