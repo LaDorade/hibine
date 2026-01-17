@@ -3,7 +3,7 @@
   import { coreAPI } from '$core/CoreAPI.svelte';
   import { history } from '@codemirror/commands';
   import { viewportStore } from '$stores/Viewport.svelte';
-  import { markdown } from '@codemirror/lang-markdown';
+  import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
   import { lineNumbers, ViewPlugin, type ViewUpdate } from '@codemirror/view';
   import { EditorView } from 'codemirror';
   import { realtimeMarkdown } from './src';
@@ -77,7 +77,7 @@
         EditorView.lineWrapping, // TODO: make settings
         
         // MD related
-        markdown(),
+        markdown({base: markdownLanguage}),
         realtimeMarkdown,
         
         // Svelte related
@@ -104,6 +104,6 @@
 <div
   bind:this={dom}
 	{@attach autofocus}
-  class="p-4 h-full overflow-auto"
+  class="p-4 h-full overflow-auto w-full max-w-4xl justify-self-center"
   placeholder="Start writing markdown..."
 ></div>

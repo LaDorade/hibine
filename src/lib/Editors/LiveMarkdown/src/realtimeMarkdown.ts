@@ -114,6 +114,7 @@ export function realtimeMarkdown(view: EditorView): DecorationSet {
         case 'Link':
         case 'LinkMark': {
           const text = view.state.sliceDoc(node.from, node.to);
+          // match [text](url)
           const match = text.match(/\[(.*?)\]\((.*?)\)/);
           if (match) {
             const linkText = match[1];

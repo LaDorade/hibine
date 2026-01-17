@@ -22,34 +22,35 @@ export const realtimeMarkdownTheme = EditorView.baseTheme({
     fontStyle: 'italic',
   },
   '.rtm-link': {
-    color: '#2563eb',
-    textDecoration: 'underline',
+    // green-400
+    color: '#4ade80',
   },
   '.rtm-url': {
-    color: '#60a5fa',
+    // green-300
+    color: '#86efac',
   },
   '.rtm-heading_1': {
-    fontSize: '1.875rem',
+    fontSize: '1.5rem',
     fontWeight: 'bold',
     lineHeight: '2.5rem',
   },
   '.rtm-heading_2': {
-    fontSize: '1.5rem',
+    fontSize: '1.4rem',
     fontWeight: 'bold',
     lineHeight: '2.25rem',
   },
   '.rtm-heading_3': {
-    fontSize: '1.375rem',
+    fontSize: '1.3rem',
     fontWeight: 'bold',
     lineHeight: '2rem',
   },
   '.rtm-heading_4': {
-    fontSize: '1.25rem',
+    fontSize: '1.2rem',
     fontWeight: 'bold',
     lineHeight: '1.75rem',
   },
   '.rtm-heading_5': {
-    fontSize: '1.125rem',
+    fontSize: '1.1rem',
     fontWeight: 'bold',
     lineHeight: '1.75rem',
   },
