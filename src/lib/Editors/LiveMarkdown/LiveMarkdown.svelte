@@ -1,11 +1,14 @@
 <script lang="ts">
+  import { onDestroy, onMount, tick } from 'svelte';
   import { coreAPI } from '$core/CoreAPI.svelte';
+  import { history } from '@codemirror/commands';
   import { viewportStore } from '$stores/Viewport.svelte';
   import { markdown } from '@codemirror/lang-markdown';
   import { lineNumbers, ViewPlugin, type ViewUpdate } from '@codemirror/view';
   import { EditorView } from 'codemirror';
   import { realtimeMarkdown } from './src';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { matchBrackets } from './Codemirror/matchBrackets';
+
   import type { FileEntry } from '$types/files';
 
   interface Props {
@@ -63,11 +66,21 @@
       parent: dom,
       doc: file.content ?? '',
       extensions: [
+        // Theming
         basicTheme,
         fixedHeightEditor,
-        lineNumbers(),
+
+        // Misc
+        lineNumbers(), // TODO: make activable on settings
+        matchBrackets(),
+        history(),
+        EditorView.lineWrapping, // TODO: make settings
+        
+        // MD related
         markdown(),
         realtimeMarkdown,
+        
+        // Svelte related
         updateContentPlugin,
       ],
     });
