@@ -9,9 +9,6 @@
   // Debounce the writeToFile calls
   let timeout: NodeJS.Timeout | null = null;
   async function handleContentChange(file: FileEntry) {
-    if (!settings.get('autoSave') || file.content === null) {
-      return;
-    }
     settings.saveSet.saving = true;
 
     if (timeout) clearTimeout(timeout);

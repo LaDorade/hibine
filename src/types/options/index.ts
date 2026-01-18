@@ -1,3 +1,4 @@
 export type Options = {
-    autoSave: boolean;
+		lineWrap: boolean;
+		lineNumbers: boolean;
 }

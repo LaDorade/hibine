@@ -2,7 +2,8 @@ import { SaveSettings } from './Settings/Save.svelte';
 import type { Options } from '$types/options';
 
 const defaultOptions: Options = {
-  autoSave: true
+  lineWrap: true,
+  lineNumbers: false,
 } as const;
 
 class Settings {
@@ -12,8 +13,9 @@ class Settings {
     return defaultOptions;
   }
 
-  #settings: Options = $derived({
-    autoSave: this.saveSet.autoSave,
+  #settings: Options = $state({
+    lineWrap: defaultOptions.lineWrap,
+    lineNumbers: defaultOptions.lineNumbers,
   });
 
   #firstLoad = true;
@@ -24,7 +26,8 @@ class Settings {
     if (savedSettings) {
       const parsedSettings = JSON.parse(savedSettings);
 
-      this.saveSet.autoSave = parsedSettings.autoSave ?? this.saveSet.autoSave;
+      this.#settings.lineWrap = parsedSettings.lineWrap ?? this.#settings.lineWrap;
+      this.#settings.lineNumbers = parsedSettings.lineNumbers ?? this.#settings.lineNumbers;
     }
     this.#firstLoad = false;
   }
@@ -32,7 +35,8 @@ class Settings {
   save() {
     console.log('Saving settings to localStorage...');
     const settingsToSave = {
-      autoSave: this.saveSet,
+      lineWrap: this.#settings.lineWrap,
+      lineNumbers: this.#settings.lineNumbers,
     };
     localStorage.setItem('settings', JSON.stringify(settingsToSave));
   }
@@ -41,10 +45,13 @@ class Settings {
     return this.#settings[settingKey];
   }
 
+  set (settingKey: keyof Options, value: boolean) {
+    this.#settings[settingKey] = value;
+    this.save();
+  }
+
   update(newSettings: Partial<Options>) {
-    if (newSettings.autoSave !== undefined) {
-      this.saveSet.autoSave = newSettings.autoSave;
-    }
+    this.#settings = { ...this.#settings, ...newSettings };
     this.save();
   }
 }

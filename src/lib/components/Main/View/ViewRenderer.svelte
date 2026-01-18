@@ -11,4 +11,6 @@
   let Comp = $derived(entry.component);
 </script>
 
-<Comp />
+<div class="h-full overflow-hidden">
+  <Comp />
+</div>

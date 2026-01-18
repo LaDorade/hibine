@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { coreAPI } from '$core/CoreAPI.svelte';
+  import { settings } from '$stores/Settings.svelte';
   import { history } from '@codemirror/commands';
   import { viewportStore } from '$stores/Viewport.svelte';
   import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
@@ -61,7 +62,7 @@
     },
   );
 
-  onMount(async () => {
+  $effect(() => {
     cm = new EditorView({
       parent: dom,
       doc: file.content ?? '',
@@ -71,10 +72,10 @@
         fixedHeightEditor,
 
         // Misc
-        lineNumbers(), // TODO: make activable on settings
+        settings.get('lineNumbers') ? lineNumbers() : [],
         matchBrackets(),
         history(),
-        EditorView.lineWrapping, // TODO: make settings
+        settings.get('lineWrap') ? EditorView.lineWrapping : [],
         
         // MD related
         markdown({base: markdownLanguage}),
@@ -85,8 +86,14 @@
       ],
     });
 
-    await tick();
-    autofocus();
+    tick().then(() =>{
+      autofocus();
+    });
+
+    return () => {
+      cm?.destroy();
+      cm = null;
+    };
   });
 
   onDestroy(() => {

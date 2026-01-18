@@ -2,6 +2,7 @@ import { pushState, replaceState } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { getCurrentTape } from '$lib/remotes/files.remote';
 import { SvelteURL } from 'svelte/reactivity';
+import { ViewMap } from '$components/Main/View';
 import type { CoreAPI } from './CoreAPI.svelte';
 
 export class Page {
@@ -18,7 +19,15 @@ export class Page {
     const url = new SvelteURL(window.location.href);
     const active = url.searchParams.get('active');
     if (active) {
-      await this.coreAPI.openFileAtPath(decodeURIComponent(active), false);
+      // todo: refacto to determine if it's a file or a view
+      await this.coreAPI.openFileAtPath(decodeURIComponent(active), false).catch(async () => {
+        // hack to wait the file open rejection before opening the view
+
+        // hack to get the view name from the URL param
+        const view = ViewMap[decodeURIComponent(active) as keyof typeof ViewMap];
+        if (!view) return;
+        await this.coreAPI.openView(view.name);
+      });
     }
   }
 

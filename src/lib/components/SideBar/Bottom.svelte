@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createFile } from '$lib/remotes/files.remote';
   import { coreAPI } from '$core/CoreAPI.svelte';
-  import { Plus, X } from '@lucide/svelte';
+  import { Plus, Settings, X } from '@lucide/svelte';
 
   let newFileInput: HTMLInputElement | null = $state(null);
 
@@ -70,6 +70,18 @@
         ]}
       >
         <Plus strokeWidth={2} class="text-gray-400" />
+      </button>
+      <button
+        data-testid="settings"
+        class={['p-2 flex justify-center items-center',
+          'bg-gray-800 hover:bg-gray-700 border border-black',
+          'shadow-[2px_2px] shadow-black hover:shadow-[1px_1px] transition-all',
+          'cursor-pointer hover:bg-gray-900'
+        ]}
+        onclick={() => coreAPI.openView('settings')}
+        type="button"
+      >
+        <Settings strokeWidth={1.5} class="text-gray-400" />
       </button>
     </div>
   </form>
