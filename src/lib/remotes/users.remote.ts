@@ -8,7 +8,8 @@ import * as auth from '$lib/server/auth';
 export const registerUser = form(z.object({
   username: z.string(),
   email: z.string(),
-  password: z.string()
+  password: z.string(),
+  actions: z.enum(['register'])
 }), async ({ username, email, password }, invalid) => {
 
   try {
@@ -47,7 +48,8 @@ export const registerUser = form(z.object({
 
 export const login = form(z.object({
   username: z.string(),
-  _password: z.string()
+  _password: z.string(),
+  actions: z.enum(['login'])
 }), async ({ username, _password: password }, invalid) => {
 
   // check credentials
@@ -68,7 +70,8 @@ export const login = form(z.object({
 export const createInitialUser = form(z.object({
   username: z.string(),
   email: z.string(),
-  _password: z.string()
+  _password: z.string(),
+  actions: z.enum(['createInitialUser'])
 }), async ({ username, email, _password: password }) => {
 
   // 1. Check that we are in initial setup state
@@ -85,7 +88,9 @@ export const createInitialUser = form(z.object({
   return redirect(303, '/login');
 });
 
-export const logout = form(async (invalid) => {
+export const logout = form(z.object({
+  actions: z.enum(['logout'])
+}), async ({ actions: _ }, invalid) => {
   const event = getRequestEvent();
   if (!event.locals.session) {
     return invalid('Not logged in');

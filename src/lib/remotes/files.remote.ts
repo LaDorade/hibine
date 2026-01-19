@@ -72,7 +72,8 @@ export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry
 });
 
 export const createFile = form(z.object({
-  fileName: z.string()
+  fileName: z.string(),
+  actions: z.enum(['create'])
 }), async ( {fileName}, invalid): Promise<FsNode> => {
   if (!fileName.trim() || /[<>:"|?*]/.test(fileName)) {
     return invalid(invalid.fileName(`Invalid file name: ${fileName}`));
