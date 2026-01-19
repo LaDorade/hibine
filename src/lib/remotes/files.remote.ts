@@ -3,7 +3,7 @@ import path, { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { writeFile, mkdir, readFile, rm, lstat } from 'node:fs/promises';
 import { move } from 'fs-extra/esm';
-import { error } from '@sveltejs/kit';
+import { error, invalid } from '@sveltejs/kit';
 import { command, form, getRequestEvent, query } from '$app/server';
 import { createFileTree } from '$lib';
 import { env } from '$env/dynamic/private';
@@ -72,10 +72,11 @@ export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry
 });
 
 export const createFile = form(z.object({
-  fileName: z.string()
-}), async ( {fileName}, invalid): Promise<FsNode> => {
+  fileName: z.string(),
+  actions: z.enum(['create'])
+}), async ( {fileName}, issue): Promise<FsNode> => {
   if (!fileName.trim() || /[<>:"|?*]/.test(fileName)) {
-    return invalid(invalid.fileName(`Invalid file name: ${fileName}`));
+    return invalid(issue.fileName(`Invalid file name: ${fileName}`));
   }
 
   const saneFilePath = getValidPathInTape(fileName);
@@ -99,7 +100,7 @@ export const createFile = form(z.object({
   }
 
   if (existsSync(saneFilePath)) {
-    return invalid(invalid.fileName('File already exists'));
+    return invalid(issue.fileName('File already exists'));
   }
   try {
     // Créer le dossier s'il n'existe pas
@@ -109,7 +110,7 @@ export const createFile = form(z.object({
     console.info(`Created file at ${saneFilePath}`);
   } catch (err) {
     console.error('Error creating file:', err);
-    return invalid(invalid.fileName('Error creating file'));
+    return invalid(issue.fileName('Error creating file'));
   }
 
   await getFileTree().refresh();

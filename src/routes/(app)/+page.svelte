@@ -44,7 +44,9 @@
       {#if data.user?.id}
         <span class=" text-gray-200">{data.user.username}</span>
         <form {...logout}>
-          <button class="cursor-pointer" {...logout.buttonProps}>
+          <button class="cursor-pointer"
+            {...logout.fields.actions.as('submit', 'logout')}
+          >
             Sign Out
           </button>
         </form>

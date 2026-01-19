@@ -69,7 +69,7 @@
       />
       <button
         data-testid="create-entry-button"
-        {...createFile.buttonProps}
+        {...createFile.fields.actions.as('submit', 'create')}
         class={['p-2 flex justify-center items-center',
           'bg-gray-800 hover:bg-gray-700 border border-black',
           'shadow-[2px_2px] shadow-black hover:shadow-[1px_1px] transition-all',
