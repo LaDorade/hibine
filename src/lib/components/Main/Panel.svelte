@@ -1,5 +1,6 @@
 <script lang="ts">
   import { coreAPI } from '$core/CoreAPI.svelte';
+  import { viewportStore } from '$stores/Viewport.svelte';
   import EditorRenderer from './Editor/EditorRenderer.svelte';
   import ViewRenderer from './View/ViewRenderer.svelte';
 
@@ -32,7 +33,12 @@ TODO: Maybe a svelte issue?
     {/if}
   </div>
 {:else}
-  <div class="w-full h-full flex items-center justify-center text-gray-500">
+  <div class="w-full h-svh flex flex-col gap-4 items-center justify-center text-gray-500">
     <div>No open tabs</div>
+    {#if !viewportStore.isMobile}
+      <div class="flex justify-center items-center gap-2">
+        <span class="text-gray-400">⌘+K</span> to open command palette
+      </div>
+    {/if}
   </div>
 {/each}

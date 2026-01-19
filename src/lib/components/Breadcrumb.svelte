@@ -34,4 +34,20 @@
       {/if}
     {/each}
   </div>
+{:else if activeTab?.kind === 'view' && activeTab?.id}
+  <div
+    aria-label="breadcrumb"
+    data-testid="breadcrumb"
+    class={[
+      'flex gap-1 px-2 mt-2 w-fit',
+      'text-sm',
+      'items-center',
+      'text-gray-400',
+      'bg-gray-800/50',
+      'border-2 border-black/50',
+      'shadow-[4px_4px] shadow-black/50'
+    ]}
+  >
+    <span class="text-gray-200">View: {activeTab.title}</span>	
+  </div>
 {/if}

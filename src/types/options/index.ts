@@ -1,4 +1,8 @@
 export type Options = {
-		lineWrap: boolean;
-		lineNumbers: boolean;
+	// Editor
+	lineWrap: boolean;
+	lineNumbers: boolean;
+
+	// View/display
+	showBreadcrumb: boolean;
 }

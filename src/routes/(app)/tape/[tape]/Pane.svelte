@@ -8,6 +8,7 @@
   import * as Resizable from '$components/ui/resizable';
   import * as Tooltip from '$lib/components/ui/tooltip';
   import { ArrowLeftToLine, ArrowRightFromLine } from '@lucide/svelte';
+  import { settings } from '$stores/Settings.svelte';
 
   let paneSize: number = $state(25);
   let isCollapsed: boolean = $derived(paneSize <= 0);
@@ -122,7 +123,9 @@
   <Resizable.Pane class="h-full" defaultSize={75} minSize={50}>
     <div class="w-full h-full grid grid-rows-[auto_auto_1fr]">
       <Tabs />
-      <Breadcrumb />
+      {#if settings.get('showBreadcrumb')}
+        <Breadcrumb />
+      {/if}
       <View />
     </div>
   </Resizable.Pane>

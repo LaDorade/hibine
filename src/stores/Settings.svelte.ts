@@ -2,8 +2,12 @@ import { SaveSettings } from './Settings/Save.svelte';
 import type { Options } from '$types/options';
 
 const defaultOptions: Options = {
+  // Editor
   lineWrap: true,
   lineNumbers: false,
+
+  // View/display
+  showBreadcrumb: true,
 } as const;
 
 class Settings {
@@ -16,6 +20,8 @@ class Settings {
   #settings: Options = $state({
     lineWrap: defaultOptions.lineWrap,
     lineNumbers: defaultOptions.lineNumbers,
+
+    showBreadcrumb: defaultOptions.showBreadcrumb,
   });
 
   #firstLoad = true;
@@ -28,6 +34,8 @@ class Settings {
 
       this.#settings.lineWrap = parsedSettings.lineWrap ?? this.#settings.lineWrap;
       this.#settings.lineNumbers = parsedSettings.lineNumbers ?? this.#settings.lineNumbers;
+
+      this.#settings.showBreadcrumb = parsedSettings.showBreadcrumb ?? this.#settings.showBreadcrumb;
     }
     this.#firstLoad = false;
   }
@@ -37,6 +45,8 @@ class Settings {
     const settingsToSave = {
       lineWrap: this.#settings.lineWrap,
       lineNumbers: this.#settings.lineNumbers,
+
+      showBreadcrumb: this.#settings.showBreadcrumb,
     };
     localStorage.setItem('settings', JSON.stringify(settingsToSave));
   }
