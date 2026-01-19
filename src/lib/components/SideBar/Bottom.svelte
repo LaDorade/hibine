@@ -14,11 +14,18 @@
   let lastCreatedPath = '';
   $effect(() => {
     if (createFile.result && 
-      createFile.result.type === 'file' &&
       lastCreatedPath !== createFile.result.path
     ) {
       lastCreatedPath = createFile.result.path;
-      coreAPI.openFile(createFile.result);
+      if (createFile.result.type === 'file') {
+        coreAPI.openFile(createFile.result);
+      }
+      coreAPI.infoUi.addModificationMessage({
+        isFolder: createFile.result.type === 'dir',
+        newPath: createFile.result.path,
+        oldPath: '',
+        type: 'created'
+      });	
     }
   });
 </script>

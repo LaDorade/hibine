@@ -34,7 +34,14 @@ export class FileAPI {
   };
 
   async createFile(filePath: string): Promise<FileEntry> {
-    return await createFileCmd({filePath});
+    const file = await createFileCmd({filePath});
+    this.core.infoUi.addModificationMessage({
+      type: 'created',
+      oldPath: '',
+      newPath: filePath,
+      isFolder: false
+    });
+    return file;
   }
 
   /**
@@ -45,6 +52,12 @@ export class FileAPI {
   async createAndOpenFile(filePath: string): Promise<FileEntry> {
     const file = await createFileIfNotExists({filePath});
     await this.core.openFile(file);
+    this.core.infoUi.addModificationMessage({
+      type: 'created',
+      oldPath: '',	
+      newPath: filePath,
+      isFolder: false
+    });
     return file;
   }
 }

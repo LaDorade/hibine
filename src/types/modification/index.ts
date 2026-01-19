@@ -1,5 +1,5 @@
 export type EntryModification = {
-		type: 'moved' | 'renamed' | 'removed';
+		type: 'created' | 'moved' | 'renamed' | 'removed';
 		oldPath: string;
 		newPath: string;
 		isFolder: boolean;

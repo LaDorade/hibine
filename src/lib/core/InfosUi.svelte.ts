@@ -11,6 +11,9 @@ export class InfoUi {
   addModificationMessage(mod: EntryModification) {
     let message = '';
     switch (mod.type) {
+    case 'created':
+      message = `Created entry "${mod.newPath}"`;
+      break;
     case 'removed':
       message = `Deleted entry "${mod.oldPath}"`;
       break;
