@@ -103,7 +103,7 @@ importers:
         specifier: ^7.6.13
         version: 7.6.13
       '@types/node':
-        specifier: ^22.19.7
+        specifier: '*'
         version: 22.19.7
       '@vitest/browser':
         specifier: ^3.2.4
