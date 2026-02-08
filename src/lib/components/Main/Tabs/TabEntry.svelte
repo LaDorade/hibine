@@ -2,7 +2,7 @@
   import { X } from '@lucide/svelte';
   import { coreAPI } from '$core/CoreAPI.svelte';
   import { stopEvent } from '$lib/utils';
-  import type { TabEntry } from '$core/internal/stores/TabStore.svelte';
+  import type { TabEntry } from '$types/tabs';
 
   type Props = {
     tab: TabEntry;

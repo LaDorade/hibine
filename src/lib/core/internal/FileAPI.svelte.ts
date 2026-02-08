@@ -20,7 +20,10 @@ export class FileAPI {
 	 * Read file content from disk.
 	 * No update of the FileEntry content in the store.
 	 */
-  readFile = async (file: { path: string }): Promise<string> => {
+  readFile = async (file: { path: string }): Promise<{
+		content: string;
+		timestamp: number;
+}> => {
     return await getFileContent(file.path);
   };
   /**
@@ -29,8 +32,12 @@ export class FileAPI {
 	 * If needed, the caller should update it with {@linkcode FileAPI.readFile}
 	 * or {@linkcode FileAPI.openFile}.
 	 */
-  writeFile = async (file: FileEntry, content: string): Promise<void> => {
-    await writeFileContent({ filePath: file.path, content });
+  writeFile = async (file: FileEntry, content: string): Promise<number> => {
+    return await writeFileContent({ 
+      filePath: file.path,
+      lastknownTimestamp: file.lastKnownTimestamp,
+      content,
+    });
   };
 
   async createFile(filePath: string): Promise<FileEntry> {

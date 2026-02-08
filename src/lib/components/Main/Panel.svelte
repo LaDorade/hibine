@@ -25,7 +25,7 @@ TODO: Maybe a svelte issue?
     id={'tabpanel-' + tab.id}
   >
     {#if tab.kind === 'file'}
-      <EditorRenderer file={tab.file} />
+      <EditorRenderer {tab} />
     {:else if tab.kind === 'view'}
       <ViewRenderer entry={tab} />
     {:else}

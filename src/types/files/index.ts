@@ -11,6 +11,7 @@ export type FileEntry = Entry & {
     type: 'file';
     childs: null;
     content: string | null;
+		lastKnownTimestamp: number;
 }
 
 export type FolderEntry = Entry & {

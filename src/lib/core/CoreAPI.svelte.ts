@@ -1,6 +1,6 @@
 import { FileAPI } from './internal/FileAPI.svelte';
 import { EntryAPI } from './internal/EntryAPI.svelte';
-import { TabKindEnum, TabStore } from './internal/stores/TabStore.svelte';
+import { TabStore } from './internal/stores/TabStore.svelte';
 import { FoldState } from '$core/internal/FoldState.svelte';
 import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
@@ -8,6 +8,7 @@ import { Page } from './Page.svelte';
 import { InfoUi } from './InfosUi.svelte';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
+import type { TabFileEntry } from '$types/tabs';
 
 
 class CoreAPI {
@@ -68,10 +69,11 @@ class CoreAPI {
     if (!this.#tabStore.tabs.find(t => t.kind === 'file' && t.id === file.path)) {
       // Load content
       const content = await this.files.readFile(file);
-      file.content = content;
+      file.content = content.content;
+      file.lastKnownTimestamp = content.timestamp;
 
       const tabEntry = {
-        kind: TabKindEnum.FILE as const,
+        kind: 'file' as const,
         id: file.path,
         file: file,
         title: file.name
@@ -95,7 +97,7 @@ class CoreAPI {
     // Open view in store (UI)
     if (!this.#tabStore.tabs.find(t => t.kind === 'view' && t.id === name)) {
       const tabEntry = {
-        kind: TabKindEnum.VIEW as const,
+        kind: 'view' as const,
         id: name,
         component: viewDef.component,
         title: viewDef.title
@@ -121,7 +123,8 @@ class CoreAPI {
 
     if (tab.kind === 'file') {
       const content = await this.files.readFile(tab.file);
-      tab.file.content = content;
+      tab.file.content = content.content;
+      tab.file.lastKnownTimestamp = content.timestamp;
     }
     if (triggerHistory) {
       this.pageStore.pushPage(tab.id);
@@ -148,6 +151,16 @@ class CoreAPI {
     for (const mod of modifications) {
       this.infoUi.addModificationMessage(mod);
     }
+  }
+
+  /**
+	 * Method to write file content and update the corresponding tab's file content and timestamp.
+	 * @fires {@linkcode CoreAPI.tabs} – the file tab is updated with new content and timestamp
+	 * prefere this over directly using {@linkcode FileAPI.writeFile}
+	 */
+  async write(tab: TabFileEntry, content: string) {
+    const ts = await this.files.writeFile(tab.file, content);
+    tab.file.lastKnownTimestamp = ts;
   }
 
   async clear() {
