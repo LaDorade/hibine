@@ -1,5 +1,5 @@
 import type { FsNode } from '$types/files';
-import { readdir } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 export async function createFileTree(parentPath: string): Promise<FsNode[]> {
@@ -14,7 +14,8 @@ export async function createFileTree(parentPath: string): Promise<FsNode[]> {
         path: entryPath,
         type: 'file',
         childs: null,
-        content: null
+        content: null,
+        lastKnownTimestamp: (await stat(path.join(parentPath, e.name))).mtimeMs
       });
     } else if (e.isDirectory()) {
       const dirpath = path.join(parentPath, e.name);

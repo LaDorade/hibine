@@ -47,7 +47,8 @@ describe('files.remote', () => {
         content: null,
         childs: null,
         type: 'file',
-        path: 'file1.txt'
+        path: 'file1.txt',
+        lastKnownTimestamp: Date.now(),
       }]);
       const tree = await getFileTree();
       expect(tree).toBeDefined();

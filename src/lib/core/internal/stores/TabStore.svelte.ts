@@ -1,30 +1,6 @@
 import type { CoreAPI } from '$core/CoreAPI.svelte';
-import type { FileEntry } from '$types/files';
-import type { Component } from 'svelte';
 import type { EntryModification } from '$types/modification';
-
-export enum TabKindEnum {
-	FILE = 'file',
-	VIEW = 'view',
-}
-
-interface BaseTabEntry {
-  id: string; // unique
-  kind: TabKindEnum;
-  title: string;
-}
-
-export type TabViewEntry = BaseTabEntry & {
-	kind: TabKindEnum.VIEW;
-	component: Component;
-}
-export type TabFileEntry = BaseTabEntry & {
-	kind: TabKindEnum.FILE;
-	file: FileEntry;
-}
-
-export type TabEntry = TabViewEntry | TabFileEntry;
-
+import { type TabEntry } from '$types/tabs';
 
 export class TabStore {
   tabs: TabEntry[] = $state([]);
@@ -72,7 +48,7 @@ export class TabStore {
           const newPath = change.newPath + relativePath;
           const newName = newPath.split('/').pop() || tab.title;
 
-          if (tab.kind === TabKindEnum.FILE) {
+          if (tab.kind === 'file') {
             return {
               ...tab,
               id: newPath,
@@ -104,7 +80,7 @@ export class TabStore {
         updatedTabs = updatedTabs.map(tab => {
           if (tab.id !== change.oldPath) return tab;
 
-          if (tab.kind === TabKindEnum.FILE) {
+          if (tab.kind === 'file') {
             return {
               ...tab,
               id: change.newPath,
