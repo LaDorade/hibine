@@ -217,14 +217,13 @@ export const writeFileContent = command(z.object({
     // Conflict
     throw error(409, 'File has been modified since last read');
   }
-  // TODO: change "writeFile" for a safer stream-based method
-  // If two request arrive at the same time, data can be lost
   await writeFile(path, content.trim(), 'utf-8');
+  const newTimestamp = await lstat(path).then(stats => stats.mtimeMs);
   console.log(`Writing content to ${path},
 length: ${content.length},
-TS: ${await lstat(path).then(stats => stats.mtimeMs)}`);
+TS: ${newTimestamp}`);
 
-  return (await lstat(path)).mtimeMs;
+  return newTimestamp;
 });
 
 export const moveEntry = command(z.object({
