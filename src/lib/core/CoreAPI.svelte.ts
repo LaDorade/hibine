@@ -6,6 +6,7 @@ import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
 import { Page } from './Page.svelte';
 import { InfoUi } from './InfosUi.svelte';
+import { ClientSocket, getSocket } from '$lib/websocket';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 import type { TabFileEntry } from '$types/tabs';
@@ -20,6 +21,8 @@ class CoreAPI {
   readonly pageStore: Page;
 	
   readonly infoUi: InfoUi;
+
+  readonly clientSocket: ClientSocket | null;
 	
   constructor() {
     // Internal
@@ -31,6 +34,8 @@ class CoreAPI {
     this.pageStore = new Page(this);
 
     this.infoUi = new InfoUi(this);
+
+    this.clientSocket = getSocket(this);
   }
 
   async init() {
@@ -53,6 +58,13 @@ class CoreAPI {
 	 */
   get activeTab() {
     return this.#tabStore.activeTab;
+  }
+
+  get activeTabUsers() {
+    return this.#tabStore.activeTabUsers ?? 0;
+  }
+  set activeTabUsers(newNb: number) {
+    this.#tabStore.activeTabUsers = newNb;
   }
 
   isActiveTab(tabId: string) {
@@ -118,8 +130,7 @@ class CoreAPI {
     const tab = this.#tabStore.tabs.find(t => t.id === tabId);
     if (!tab) return;
 
-    // Set the active tab in the store
-    this.#tabStore.activeTabId = tab.id;
+    this.#tabStore.openTab(tab);
 
     if (tab.kind === 'file') {
       const content = await this.files.readFile(tab.file);

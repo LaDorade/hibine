@@ -21,7 +21,16 @@
         {coreAPI.infoUi.lastMessage}
       </div>
     {/key}
-    <div>
+    <div class="flex gap-2 items-center">
+      {#if coreAPI.clientSocket?.socket?.connected}
+        <span class="text-green-400">
+          WS Connected {coreAPI.activeTab ? coreAPI.activeTabUsers : ''}
+        </span>
+      {:else}
+        <span class="text-red-400">
+          WS Disconnected
+        </span>
+      {/if}
       {#if settings.saveSet.saving}
         <span class="text-gray-500">
           Saving...

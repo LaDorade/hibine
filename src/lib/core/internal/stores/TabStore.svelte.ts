@@ -5,6 +5,7 @@ import { type TabEntry } from '$types/tabs';
 export class TabStore {
   tabs: TabEntry[] = $state([]);
   activeTabId: string | null = $state(null);
+  activeTabUsers: number | null = $state(null);
   activeTab: TabEntry | null = $derived.by(() => {
     if (this.activeTabId) {
       return this.tabs.find(t => t.id === this.activeTabId) || null;
@@ -20,8 +21,15 @@ export class TabStore {
     }
     this.activeTabId = tab.id;
     this.tabs = [...this.tabs];
+    this.core.clientSocket?.socket.emit('tab-opened', { 
+      id: tab.id,
+      kind: tab.kind
+    }, (users: number) => {
+      this.activeTabUsers = users;
+    });
   }
   async closeTab(tabId: string) {
+    const tab = this.getTab(tabId);
     const afterTabs = this.tabs.filter(t => t.id !== tabId);
     if (this.activeTabId === tabId) {
       const newActiveTab = afterTabs.length > 0 ? afterTabs[0] : null;
@@ -33,6 +41,14 @@ export class TabStore {
       }
     }
     this.tabs = afterTabs;
+    this.core.clientSocket?.socket.emit('tab-closed', { 
+      id: tab?.id,
+      kind: tab?.kind
+    });
+  }
+
+  getTab(id: string): TabEntry | undefined {
+    return this.tabs.find(t => t.id === id);
   }
 
   async syncModifications(changes: EntryModification[]) {
