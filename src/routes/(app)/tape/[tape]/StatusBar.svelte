@@ -24,7 +24,7 @@
     <div class="flex gap-2 items-center">
       {#if coreAPI.clientSocket?.socket?.connected}
         <span class="text-green-400">
-          WS Connected {coreAPI.activeTab ? coreAPI.activeTabUsers : ''}
+          WS Connected {coreAPI.activeTab ? coreAPI.activeTabInfos?.usersNb : ''}
         </span>
       {:else}
         <span class="text-red-400">

@@ -1,6 +1,6 @@
 import { FileAPI } from './internal/FileAPI.svelte';
 import { EntryAPI } from './internal/EntryAPI.svelte';
-import { TabStore } from './internal/stores/TabStore.svelte';
+import { TabStore, type ActiveTabInfos } from './internal/stores/TabStore.svelte';
 import { FoldState } from '$core/internal/FoldState.svelte';
 import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
@@ -60,15 +60,16 @@ class CoreAPI {
     return this.#tabStore.activeTab;
   }
 
-  get activeTabUsers() {
-    return this.#tabStore.activeTabUsers ?? 0;
+  get activeTabInfos() {
+    return this.#tabStore.activeTabInfos ?? null;
   }
-  set activeTabUsers(newNb: number) {
-    this.#tabStore.activeTabUsers = newNb;
+  set activeTabInfos(newInfo: ActiveTabInfos | null) {
+    if (!this.#tabStore.activeTabInfos) return;
+    this.#tabStore.activeTabInfos = newInfo;
   }
 
   isActiveTab(tabId: string) {
-    return this.#tabStore.activeTabId === tabId;
+    return this.#tabStore.activeTabInfos?.id === tabId;
   }
 
   async openFileAtPath(path: string, triggerHistory = true) {
