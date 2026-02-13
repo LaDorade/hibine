@@ -2,7 +2,7 @@ import { mkdir, readdir, rm } from 'node:fs/promises';
 import { form, query } from '$app/server';
 import z from 'zod';
 import path from 'node:path';
-import { error } from '@sveltejs/kit';
+import { error, invalid } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
 const NOTE_DIR = env.NOTE_DIR;
@@ -20,7 +20,7 @@ export const createTape = form(
   z.object({
     tapeName: z.string().min(1).max(100)
   }),
-  async ({ tapeName }, invalid) => {
+  async ({ tapeName }, issue) => {
     const tapePath = path.join(NOTE_DIR, tapeName);
 		
     try {
@@ -28,7 +28,7 @@ export const createTape = form(
       console.log('Creating tape: ', tapeName);
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === 'EEXIST') {
-        return invalid({message: 'Tape with this name already exists'});
+        return invalid(issue.tapeName('Tape with this name already exists'));
       } else {
         // Invalid server state -> sveltekit error
         console.error('Error creating tape: ', err);

@@ -35,7 +35,7 @@
       />
     </div>
     <button
-      {...login.buttonProps}
+      {...login.fields.actions.as('submit', 'login')}
       disabled={!isPasswordValid}
       class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
     >
