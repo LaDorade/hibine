@@ -36,9 +36,3 @@ TO BE ADDED
 ## Hibine – 日々音
 
 Everyday sound
-
-## License
-
-MIT
-
-> Open source software made with open source tools
