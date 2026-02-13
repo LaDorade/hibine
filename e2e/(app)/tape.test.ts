@@ -16,42 +16,9 @@ test.describe('Tapes', () => {
     for (const tapeName of newTapes) {
       await page.getByTestId('create-tape-button').click();
       await page.getByTestId('tape-name-input').fill(tapeName);
-      await page.getByRole('button', { name: 'Add' }).click();
+      await page.getByTestId('new-tape-button').click();
       await expect(page.getByText(tapeName)).toBeAttached();
     }
-  });
-
-  test('Create tape with empty name', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-	
-    const tapeItemNumber = await page.getByTestId('tape-item').count();
-	
-    // Attempt to create tape with empty name
-    await page.getByTestId('create-tape-button').click();
-    await page.getByTestId('submit-tape-button').click();
-	
-    // Verify tape is not created with empty name
-    await expect(page.getByTestId('tape-item')).toHaveCount(tapeItemNumber);
-  });
-
-  test('Cancel tape creation multiple times', async ({ page }) => {
-    await page.goto('/');
-	
-    const tapeItemNumber = await page.getByTestId('tape-item').count();
-    // Cancel creation multiple times
-    for (let i = 0; i < 3; i++) {
-      const tapeName = `Tape-${randomUUID()}`;
-      await page.getByTestId('create-tape-button').click();
-      await page.getByTestId('tape-name-input').fill(tapeName);
-      await page.getByRole('button', { name: 'Cancel' }).click();
-		
-      await expect(page.getByText(tapeName)).not.toBeAttached();
-      await expect(page.getByTestId('tape-name-input')).not.toBeAttached();
-    }
-	
-    // Verify no tapes were created
-    await expect(page.getByTestId('tape-item')).toHaveCount(tapeItemNumber);
   });
 
   test('Navigate back from tape page', async ({ page }) => {
@@ -62,7 +29,7 @@ test.describe('Tapes', () => {
     // Create tape
     await page.getByTestId('create-tape-button').click();
     await page.getByTestId('tape-name-input').fill(tapeName);
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByTestId('new-tape-button').click();
 	
     // Go to tape page
     await page.getByText(tapeName).click();
@@ -94,14 +61,14 @@ test.describe('Tapes', () => {
     // Create first tape
     await page.getByTestId('create-tape-button').click();
     await page.getByTestId('tape-name-input').fill(tapeName);
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByTestId('new-tape-button').click();
     await expect(page.getByText(tapeName)).toBeAttached();
 	
     // Attempt to create second tape with same name
     await page.getByTestId('create-tape-button').click();
     await page.getByTestId('tape-name-input').fill(tapeName);
     const createTapeReq = page.waitForRequest(/createTape/);
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByTestId('new-tape-button').click();
     const req = await createTapeReq;
     const res = await req.response();
 

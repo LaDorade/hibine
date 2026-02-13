@@ -16,7 +16,10 @@
     file: FileEntry;
     handleContentChange: (file: FileEntry) => Promise<void>;
   }
-  let { file, handleContentChange }: Props = $props();
+  let {
+    file,
+    handleContentChange
+  }: Props = $props();
 
   let dom: HTMLElement = $state()!;
   let cm: EditorView | null = null;

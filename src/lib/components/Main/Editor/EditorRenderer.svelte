@@ -3,8 +3,9 @@
   import LiveMarkdown from '$lib/Editors/LiveMarkdown/LiveMarkdown.svelte';
   import { settings } from '$stores/Settings.svelte';
   import type { FileEntry } from '$types/files';
+  import type { TabFileEntry } from '$types/tabs';
 
-  let { file }: { file: FileEntry } = $props();
+  let { tab }: { tab: TabFileEntry } = $props();
 
   // Debounce the writeToFile calls
   let timeout: NodeJS.Timeout | null = null;
@@ -15,7 +16,7 @@
     timeout = setTimeout(async () => {
       try {
         if (file.content !== null) {
-          await coreAPI.files.writeFile(file, file.content);
+          await coreAPI.write(tab, file.content);
         }
       } catch (error) {
         console.error('Error saving file:', error);
@@ -28,10 +29,13 @@
   // ensure file content is synced client-side during HMR
   import.meta.hot?.dispose(async () => {
     if (timeout) clearTimeout(timeout);
-    file.content = await coreAPI.files.readFile(file);
+    tab.file = {
+      ...tab.file,
+      ...await coreAPI.files.readFile(tab.file)
+    };
   });
 </script>
 
 <div class="h-full overflow-hidden">
-  <LiveMarkdown {file} {handleContentChange} />
+  <LiveMarkdown file={tab.file} {handleContentChange} />
 </div>

@@ -42,12 +42,19 @@ export const getCurrentTape = query(async (): Promise<string> => {
 });
 
 
-export const getFileContent = query(z.string(), async (filePath): Promise<string> => {
+export const getFileContent = query(z.string(), async (filePath): Promise<{
+		content: string;
+		timestamp: number;
+}> => {
   const path = getValidPathInTape(filePath);
   const file = await readFile(path, {
     encoding: 'utf-8',
   });
-  return file;
+  const stats = await lstat(path);
+  return {
+    content: file,
+    timestamp: stats.mtimeMs
+  };
 });
 
 export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry> => {
@@ -67,7 +74,8 @@ export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry
     path: getRelativePathFromTape(saneFilePath),
     type: 'file',
     content,
-    childs: null
+    childs: null,
+    lastKnownTimestamp: Date.now()
   };
 });
 
@@ -120,7 +128,8 @@ export const createFile = form(z.object({
     path: getRelativePathFromTape(saneFilePath),
     type: 'file',
     content: '',
-    childs: null
+    childs: null,
+    lastKnownTimestamp: Date.now()
   };
 });
 
@@ -152,7 +161,8 @@ export const createFileCmd = command(z.object({
     path: getRelativePathFromTape(filePath),
     type: 'file',
     content: '',
-    childs: null
+    childs: null,
+    lastKnownTimestamp: Date.now()
   };
 });
 
@@ -178,7 +188,8 @@ export const createFileIfNotExists = command(z.object({
     path: getRelativePathFromTape(filePath),
     type: 'file',
     content: '',
-    childs: null
+    childs: null,
+    lastKnownTimestamp: Date.now()
   };
 });
 
@@ -192,13 +203,28 @@ export const createFolder = command(z.object({
 
 export const writeFileContent = command(z.object({
   filePath: z.string(),
-  content: z.string()
-}), async ({ filePath, content }) => {
+  content: z.string(),
+  lastknownTimestamp: z.number()
+}), async ({ filePath, content, lastknownTimestamp: timestamp }): Promise<number> => {
   const path = getValidPathInTape(filePath);
-  // TODO: change "writeFile" for a safer stream-based method
-  // If two request arrive at the same time, data can be lost
+
+  const stats = await lstat(path);
+  if (!stats.isFile()) {
+    // Unsupported Media Type
+    throw error(415, 'Path is not a file');
+  }
+  if (stats.mtimeMs > timestamp) {
+    console.warn('LastKnown TS:', timestamp, 'file TS:', stats.mtimeMs);
+    // Conflict
+    throw error(409, 'File has been modified since last read');
+  }
   await writeFile(path, content.trim(), 'utf-8');
-  console.log(`Writing content to ${path}`);
+  const newTimestamp = await lstat(path).then(stats => stats.mtimeMs);
+  console.log(`Writing content to ${path},
+length: ${content.length},
+TS: ${newTimestamp}`);
+
+  return newTimestamp;
 });
 
 export const moveEntry = command(z.object({
