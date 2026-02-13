@@ -87,7 +87,7 @@ describe('files.remote', () => {
         'test-data/testing_tape/file.txt': 'file content',
       });
       const content = await getFileContent('file.txt');
-      expect(content).toBe('file content');
+      expect(content.content).toBe('file content');
     });
     it('should throw an error if file does not exist', async () => {
       vol.fromJSON({});
