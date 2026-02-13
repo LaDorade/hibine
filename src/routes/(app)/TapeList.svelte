@@ -44,6 +44,7 @@
         type="button"
         onclick={() => (creatingTape = true)}
 				{@attach onClickOutside}
+        data-testid="create-tape-button"
         class={[
           'cursor-pointer group bg-gray-800/50 hover:bg-gray-800 border-2 border-dashed border-gray-700 flex justify-center items-center',
           creatingTape ? 'bg-gray-800 hover:bg-gray-800 border border-solid' : ''
@@ -65,14 +66,18 @@
 							{@attach (node: HTMLInputElement) => node.focus()}
               placeholder="Enter tape name"
               bind:value={newTapeName}
+              data-testid="tape-name-input"
               class={['p-2 w-full bg-gray-800 focus:outline-none',
                 'shadow-[2px_2px] shadow-black border border-black'
               ]}
             />
             <label class="">
-              <button type="submit" class={['cursor-pointer bg-gray-700 hover:bg-gray-600 flex gap-2 justify-center items-center border px-4 py-2',
-                'border border-black shadow-[2px_2px] shadow-black'
-              ]}>
+              <button
+                data-testid="new-tape-button"
+                type="submit"
+                class={['cursor-pointer bg-gray-700 hover:bg-gray-600 flex gap-2 justify-center items-center border px-4 py-2',
+                  'border border-black shadow-[2px_2px] shadow-black'
+                ]}>
                 Add (⏎)
                 <Plus class="w-4 h-4 text-gray-400" />
               </button>

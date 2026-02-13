@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { TabViewEntry } from '$core/internal/stores/TabStore.svelte';
+  import type { TabViewEntry } from '$types/tabs';
+
 
   interface Props {
     entry: TabViewEntry

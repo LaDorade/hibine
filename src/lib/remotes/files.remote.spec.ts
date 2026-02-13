@@ -47,7 +47,8 @@ describe('files.remote', () => {
         content: null,
         childs: null,
         type: 'file',
-        path: 'file1.txt'
+        path: 'file1.txt',
+        lastKnownTimestamp: Date.now(),
       }]);
       const tree = await getFileTree();
       expect(tree).toBeDefined();
@@ -86,7 +87,7 @@ describe('files.remote', () => {
         'test-data/testing_tape/file.txt': 'file content',
       });
       const content = await getFileContent('file.txt');
-      expect(content).toBe('file content');
+      expect(content.content).toBe('file content');
     });
     it('should throw an error if file does not exist', async () => {
       vol.fromJSON({});

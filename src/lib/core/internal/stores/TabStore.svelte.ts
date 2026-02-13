@@ -1,37 +1,19 @@
 import type { CoreAPI } from '$core/CoreAPI.svelte';
-import type { FileEntry } from '$types/files';
-import type { Component } from 'svelte';
 import type { EntryModification } from '$types/modification';
+import { type TabEntry } from '$types/tabs';
 
-export enum TabKindEnum {
-	FILE = 'file',
-	VIEW = 'view',
+export type ActiveTabInfos = {
+	id: string;
+	usersNb?: number;
+	editable?: boolean;
 }
-
-interface BaseTabEntry {
-  id: string; // unique
-  kind: TabKindEnum;
-  title: string;
-}
-
-export type TabViewEntry = BaseTabEntry & {
-	kind: TabKindEnum.VIEW;
-	component: Component;
-}
-export type TabFileEntry = BaseTabEntry & {
-	kind: TabKindEnum.FILE;
-	file: FileEntry;
-}
-
-export type TabEntry = TabViewEntry | TabFileEntry;
-
 
 export class TabStore {
   tabs: TabEntry[] = $state([]);
-  activeTabId: string | null = $state(null);
+  activeTabInfos: ActiveTabInfos | null = $state(null);
   activeTab: TabEntry | null = $derived.by(() => {
-    if (this.activeTabId) {
-      return this.tabs.find(t => t.id === this.activeTabId) || null;
+    if (this.activeTabInfos?.id) {
+      return this.tabs.find(t => t.id === this.activeTabInfos?.id) || null;
     }
     return null;
   });
@@ -42,26 +24,46 @@ export class TabStore {
     if (!this.tabs.find(t => t.id === tab.id)) {
       this.tabs.push(tab);
     }
-    this.activeTabId = tab.id;
-    this.tabs = [...this.tabs];
+    this.activeTabInfos = {
+      id: tab.id,
+    };
+
+    this.core.clientSocket?.socket.emit('tab-opened', { 
+      id: tab.id,
+      kind: tab.kind
+    }, (users: number) => {
+      if (!this.activeTabInfos) return;
+      this.activeTabInfos.usersNb = users;
+    });
   }
   async closeTab(tabId: string) {
+    const tab = this.getTab(tabId);
     const afterTabs = this.tabs.filter(t => t.id !== tabId);
-    if (this.activeTabId === tabId) {
+    if (this.activeTabInfos?.id === tabId) {
       const newActiveTab = afterTabs.length > 0 ? afterTabs[0] : null;
       if (newActiveTab) {
         this.core.activateTab(newActiveTab.id);
       } else {
-        this.activeTabId = null;
+        this.activeTabInfos = null;
         this.core.pageStore.pushPage(null);
       }
     }
+
+
     this.tabs = afterTabs;
+    this.core.clientSocket?.socket.emit('tab-closed', { 
+      id: tab!.id,
+      kind: tab!.kind
+    });
+  }
+
+  getTab(id: string): TabEntry | undefined {
+    return this.tabs.find(t => t.id === id);
   }
 
   async syncModifications(changes: EntryModification[]) {
     let updatedTabs = this.tabs;
-    let newActiveTabId = this.activeTabId;
+    let newActiveTabInfos = this.activeTabInfos;
 
     for (const change of changes) {
       if (change.type === 'moved' || (change.type === 'renamed' && change.isFolder)) {
@@ -72,7 +74,7 @@ export class TabStore {
           const newPath = change.newPath + relativePath;
           const newName = newPath.split('/').pop() || tab.title;
 
-          if (tab.kind === TabKindEnum.FILE) {
+          if (tab.kind === 'file') {
             return {
               ...tab,
               id: newPath,
@@ -92,9 +94,9 @@ export class TabStore {
           }
         });
 
-        if (newActiveTabId?.startsWith(change.oldPath)) {
-          const relativePath = newActiveTabId.slice(change.oldPath.length);
-          newActiveTabId = change.newPath + relativePath;
+        if (newActiveTabInfos?.id.startsWith(change.oldPath)) {
+          const relativePath = newActiveTabInfos.id.slice(change.oldPath.length);
+          newActiveTabInfos.id = change.newPath + relativePath;
         }
 
       } else if (change.type === 'renamed' && !change.isFolder) {
@@ -104,7 +106,7 @@ export class TabStore {
         updatedTabs = updatedTabs.map(tab => {
           if (tab.id !== change.oldPath) return tab;
 
-          if (tab.kind === TabKindEnum.FILE) {
+          if (tab.kind === 'file') {
             return {
               ...tab,
               id: change.newPath,
@@ -124,8 +126,9 @@ export class TabStore {
           }
         });
 
-        if (newActiveTabId === change.oldPath) {
-          newActiveTabId = change.newPath;
+        if (newActiveTabInfos?.id === change.oldPath) {
+          // todo: request if new file is editable/nbofusers
+          newActiveTabInfos.id = change.newPath;
         }
 
       } else if (change.type === 'removed') {
@@ -136,19 +139,26 @@ export class TabStore {
         const tabsToRemove = updatedTabs.filter(shouldRemove);
         updatedTabs = updatedTabs.filter(tab => !shouldRemove(tab));
 
-        if (tabsToRemove.some(tab => tab.id === newActiveTabId)) {
-          newActiveTabId = updatedTabs.length > 0 ? updatedTabs[0].id : null;
+        if (tabsToRemove.some(tab => tab.id === newActiveTabInfos?.id)) {
+          if (updatedTabs.length > 0) {
+						newActiveTabInfos!.id = updatedTabs!.at(0)!.id;
+          } else {
+            newActiveTabInfos = null;
+          }
         }
       }
     }
 
     this.tabs = updatedTabs;
-    this.activeTabId = newActiveTabId;
-    this.core.pageStore.replacePage(this.activeTabId);
+    if (newActiveTabInfos) {
+      this.core.activateTab(newActiveTabInfos.id, false);
+    }
+    this.activeTabInfos = newActiveTabInfos;
+    this.core.pageStore.replacePage(this.activeTabInfos?.id);
   }
 
   clear() {
     this.tabs = [];
-    this.activeTabId = null;
+    this.activeTabInfos = null;
   }
 }
