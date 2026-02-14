@@ -85,6 +85,7 @@
     "path-browserify": "^1.0.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
+    "vite-plugin-lucide-preprocess": "^1.4.6",
     "zod": "^4.1.12"
   },
   "packageManager": "pnpm@10.18.2",
