@@ -8,7 +8,7 @@
   import { FilePlus, FolderTree, Settings } from '@lucide/svelte';
 
   onNavigate(() => {
-    viewportStore.isMobileSidebarOpen = !viewportStore.isMobileSidebarOpen;
+    viewportStore.isMobileSidebarOpen = false;
   });
 </script>
 
