@@ -52,4 +52,4 @@ VOLUME /app/data/
 
 EXPOSE 3000
 
-CMD ["node", "serer/index.ts"]
+CMD ["node", "server/index.ts"]
