@@ -7,7 +7,7 @@ alias u := unit
 pm := "pnpm"
 
 dev:
-	{{pm}} dev
+	{{pm}} dev --host
 
 lint:
 	{{pm}} lint

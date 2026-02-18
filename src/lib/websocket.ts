@@ -1,7 +1,7 @@
 import ioClient, {Socket} from 'socket.io-client';
 
 import { createSubscriber } from 'svelte/reactivity';
-import { browser, dev } from '$app/environment';
+import { browser } from '$app/environment';
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { ClientToServerEvents, ServerClientEvents } from '$types/socket';
 
@@ -10,10 +10,9 @@ export function getSocket(core: CoreAPI) {
   if (!browser) return null;
 	
   if (!socket) {
-    const port = dev ? 5173 : 3000; // todo: get from env ?
-    const { protocol, hostname } = window.location;
-    const url = `${protocol}//${hostname}`;
-    const iosocket = ioClient(`${url}:${port}`);
+    const { protocol, host } = window.location;
+    const url = `${protocol}//${host}`;
+    const iosocket = ioClient(url);
     socket = new ClientSocket(iosocket, core);
   } else if (!socket.socket.connected) {
     socket.socket.connect();
