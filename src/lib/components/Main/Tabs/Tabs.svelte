@@ -7,7 +7,7 @@
   <div
     role="tablist"
     aria-label="Open Tabs"
-    class={['flex h-14 mt-2 mr-2 relative overflow-x-auto overscroll-none scrollbar-hide',
+    class={['flex h-14 md:mt-2 md:mr-2 relative overflow-x-auto overscroll-none scrollbar-hide',
       'border-2 border-black bg-gray-800',
       'shadow-[4px_4px] shadow-black'
     ]}
