@@ -12,7 +12,11 @@
   });
 </script>
 
-<div class="md:hidden grow w-full h-12 z-10 grid grid-flow-col items-center">
+<div class={[
+  'border-t',
+  coreAPI.clientSocket?.socket.connected ? 'border-green-400/40' : 'border-red-500/80',
+  'md:hidden grow w-full h-12 z-10 grid grid-flow-col items-center',
+]}>
   <button
     onclick={() => {
       const newFile = prompt('New file name');
@@ -21,7 +25,7 @@
       coreAPI.files.createAndOpenFile(newFile);
     }}
     class="w-full h-full flex justify-center items-center px-4 text-gray-400 hover:text-white cursor-pointer
-      bg-gray-800 border-t border-gray-700"
+      bg-gray-800 "
   >
     <FilePlus strokeWidth={1} />
   </button>
@@ -30,14 +34,14 @@
       coreAPI.openView('settings');
     }}
     class="w-full h-full flex justify-center items-center px-4 text-gray-400 hover:text-white cursor-pointer
-      bg-gray-800 border-t border-gray-700"
+      bg-gray-800"
   >
     <Settings strokeWidth={1} />
   </button>
   <Drawer.Root bind:open={viewportStore.isMobileSidebarOpen}>
     <Drawer.Trigger
       class="h-full w-full flex justify-center items-center px-4 text-gray-400 hover:text-white cursor-pointer
-        bg-gray-800 border-t border-gray-700"
+        bg-gray-800"
     >
       <FolderTree strokeWidth={1} />
     </Drawer.Trigger>
