@@ -6,7 +6,7 @@ import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
 import { Page } from './Page.svelte';
 import { InfoUi } from './InfosUi.svelte';
-import { ClientSocket, getSocket } from '$lib/websocket';
+import { type ClientSocket, getSocket } from '$lib/websocket';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 import type { TabFileEntry } from '$types/tabs';
@@ -22,7 +22,7 @@ class CoreAPI {
 	
   readonly infoUi: InfoUi;
 
-  readonly clientSocket: ClientSocket | null;
+  #clientSocket: ClientSocket | null = null;
 	
   constructor() {
     // Internal
@@ -34,14 +34,20 @@ class CoreAPI {
     this.pageStore = new Page(this);
 
     this.infoUi = new InfoUi(this);
-
-    this.clientSocket = getSocket(this);
   }
-
+	
   async init() {
     const tapeName = await getCurrentTape();
     this.foldState.init(tapeName);
     this.pageStore.init();
+    this.#clientSocket = getSocket(this);
+  }
+
+  get clientSocket() {
+    if (!this.#clientSocket) {
+      this.#clientSocket = getSocket(this);
+    }
+    return this.#clientSocket;
   }
 
   /**

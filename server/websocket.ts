@@ -1,4 +1,5 @@
 import {Server} from 'socket.io';
+
 import type { TabKind } from '$types/tabs';
 import type {HttpServer} from 'vite';
 
@@ -10,6 +11,8 @@ const fileUserMap = new Map<
 	Set<string> // users connected
 >();
 
+const tapeKey = 'tape:';
+
 export function initServerWebsocket(server: HttpServer | null) {
 
   if (!server) {
@@ -19,13 +22,55 @@ export function initServerWebsocket(server: HttpServer | null) {
 
   const io = new Server<ClientToServerEvents, ServerClientEvents, object, object>(server);
 
-  io.on('connection', (socket) => {
-    console.log('a user connected', socket.id);
+  io.on('connection', async (socket) => {
+    console.log(
+      'a user connected',
+      socket.id,
+      socket.handshake.headers['x-tape-name'],
+      socket.handshake.headers.cookie
+    );
+
+		
+    // todo: imp
+    // I would like something like that, but ws is outside of vite and svelte, without env access
+    // await ensureTapeExists(tape);
+
+    // same here, alias + env
+    // if (!socket.handshake.headers.cookie) {
+    //   console.warn('Missing session cookie');
+    //   socket.disconnect(true);
+    //   return;
+    // }
+    // const cookieObj = JSON.parse(socket.handshake.headers.cookie);
+    // const auth = await validateSessionToken(
+    //   cookieObj['auth-session']
+    // );
+    // if (!auth || !auth.session) {
+    //   console.warn('Invalid session token');
+    //   socket.disconnect(true);
+    //   return;
+    // }
+
+    const tape = socket.handshake.headers['x-tape-name'];
+    if (!tape || typeof tape !== 'string') {
+      console.warn('Invalid or missing tape name');
+      socket.disconnect(true);
+      return;
+    }
+
+    await socket.join(
+      tapeKey + tape
+    );
 
     socket.on('tab-opened', (tab: {id: string, kind: TabKind}, callback) => {
       if (!socket.id || tab.kind !== 'file') return;
 
-      console.info('[Info] Tab opened by', socket.id, tab);
+      console.info('[Info] Tab opened by', 
+        socket.id, 
+        tab,
+        'on',
+        [...socket.rooms].filter(r => r.startsWith('tape:')).map(r => r.slice(tapeKey.length)).join()
+      );
 
       if (!fileUserMap.has(tab.id)) {
         fileUserMap.set(tab.id, new Set<string>());
