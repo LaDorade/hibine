@@ -1,11 +1,19 @@
 import path from 'node:path';
+import { z } from 'zod';
 import { move, remove } from 'fs-extra/esm';
 import { lstat } from 'fs/promises';
 import { getRelativePathFromTape, getValidPathFromTape, sanitizeFileName } from '$lib/remotes/files.utils';
 import type { EntryModification } from '$types/modification';
 import type { TabKind } from '$types/tabs';
 
-const tapePrefix = 'tape:';
+export const tapePrefix = 'tape:';
+
+export function getServerSocket() {
+  if (!globalThis.myServerSocket) {
+    throw new Error('Websocket server not initialized');
+  }
+  return globalThis.myServerSocket;
+}
 
 export function registerSvelteKitWebsocket() {
   const io = globalThis.myServerSocket;
@@ -106,8 +114,13 @@ export function registerSvelteKitWebsocket() {
     });
 
     /* * Entry operations handlers * */
-    socket.on('entry-deleted', async (entryPath: string) => {
-      const saneEntryPath = getValidPathFromTape(tape, entryPath);
+    socket.on('entry-deleted', async (entryDeletion: EntryDeletedParams) => {
+      const parsed = await entryDeletedSchema.safeParseAsync(entryDeletion);
+      if (!parsed.success) {
+        console.warn('Invalid entry deletion params:', parsed.error);
+        return;
+      }
+      const saneEntryPath = getValidPathFromTape(tape, parsed.data);
       const stats = await lstat(saneEntryPath);
       const isFolder = stats.isDirectory();
 
@@ -123,9 +136,14 @@ export function registerSvelteKitWebsocket() {
       io.to(tapePrefix + tape)
         .emit('remoteModification', modifications);
     });
-    socket.on('entry-renamed', async (params: {entryPath: string, newName: string}) => {
-      const saneEntryPath = getValidPathFromTape(tape, params.entryPath);
-      const sanitizedName = sanitizeFileName(params.newName);
+    socket.on('entry-renamed', async (params: EntryRenamedParams) => {
+      const parsed = await entryRenamedSchema.safeParseAsync(params);
+      if (!parsed.success) {
+        console.warn('Invalid entry renamed params:', parsed.error);
+        return;
+      }
+      const saneEntryPath = getValidPathFromTape(tape, parsed.data.entryPath);
+      const sanitizedName = sanitizeFileName(parsed.data.newName);
       const targetFolder = path.dirname(saneEntryPath);
       console.log(targetFolder);
 			
@@ -148,10 +166,15 @@ export function registerSvelteKitWebsocket() {
       io.to(tapePrefix + tape)
         .emit('remoteModification', modifications);
     });
-    socket.on('entry-moved', async (params: {entryPath: string, destFolder: string}) => {
+    socket.on('entry-moved', async (params: EntryMovedParams) => {
 			  // Validation
-      const saneEntryPath = getValidPathFromTape(tape, params.entryPath);
-      const saneDestFolder = getValidPathFromTape(tape, params.destFolder);
+      const parsed = await entryMovedSchema.safeParseAsync(params);
+      if (!parsed.success) {
+        console.warn('Invalid entry moved params:', parsed.error);
+        return;
+      }
+      const saneEntryPath = getValidPathFromTape(tape, parsed.data.entryPath);
+      const saneDestFolder = getValidPathFromTape(tape, parsed.data.destFolder);
 
       const entryName = path.basename(saneEntryPath);
       const newEntryPath = path.resolve(saneDestFolder, entryName);
@@ -176,3 +199,16 @@ export function registerSvelteKitWebsocket() {
     });
   });
 }
+
+const entryDeletedSchema = z.string();
+const entryRenamedSchema = z.object({
+  entryPath: z.string(),
+  newName: z.string()});
+const entryMovedSchema = z.object({
+  entryPath: z.string(),
+  destFolder: z.string()
+});
+
+type EntryDeletedParams = z.infer<typeof entryDeletedSchema>;
+type EntryRenamedParams = z.infer<typeof entryRenamedSchema>;
+type EntryMovedParams = z.infer<typeof entryMovedSchema>;

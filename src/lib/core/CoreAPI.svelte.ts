@@ -186,6 +186,7 @@ class CoreAPI {
   async clear() {
     this.#tabStore.clear();
     this.foldState.clear();
+    this.#clientSocket?.socket.disconnect();
   }
 }
 

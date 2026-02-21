@@ -8,6 +8,7 @@ import { createFileTree } from '$lib';
 import { env } from '$env/dynamic/private';
 import { getRelativePathInTape, getValidPathInTape, sanitizeFileName } from './files.utils';
 import type { FileEntry, FsNode } from '$types/files';
+import { getServerSocket, tapePrefix } from '../../socket.server';
 
 const NOTE_DIR = env.NOTE_DIR;
 
@@ -119,6 +120,10 @@ export const createFile = form(z.object({
   }
 
   await getFileTree().refresh();
+
+  const io = getServerSocket();
+  io.to(tapePrefix + params.tape)
+    .emit('remoteModification', []); // will refresh client file tree
 
   return {
     name: newFilename,
