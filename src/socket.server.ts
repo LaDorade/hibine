@@ -1,10 +1,10 @@
-import path from 'node:path';
 import { z } from 'zod';
-import { move, remove } from 'fs-extra/esm';
-import { lstat } from 'fs/promises';
-import { getRelativePathFromTape, getValidPathFromTape, sanitizeFileName } from '$lib/remotes/files.utils';
-import type { EntryModification } from '$types/modification';
+import { validateSessionToken } from '$lib/server/auth';
+import { tapeExists } from '$lib/server/tape.utils';
+import { deleteEntry, moveEntry, renameEntry } from '$lib/server/entries';
+
 import type { TabKind } from '$types/tabs';
+import type { Socket } from 'socket.io';
 
 export const tapePrefix = 'tape:';
 
@@ -14,6 +14,47 @@ export function getServerSocket() {
   }
   return globalThis.myServerSocket;
 }
+
+async function validateAndAttachUserInfos(socket: Socket) {
+  // Check tape
+  const tape = socket.handshake.headers['x-tape-name'];
+  if (!tape || typeof tape !== 'string') {
+    console.warn('Invalid or missing tape name');
+    socket.disconnect(true);
+    return;
+  }
+  const tapeExistsResult = await tapeExists(tape);
+  if (!tapeExistsResult) {
+    console.warn('Tape does not exist:', tape);
+    socket.disconnect(true);
+    return;
+  }
+  console.info('Client connected to tape:', tape);
+  socket.data.tape = tape;
+
+  // Check auth
+  if (!socket.handshake.headers.cookie) {
+    console.warn('Missing session cookie');
+    socket.disconnect(true);
+    return;
+  }
+  const cookieObj = JSON.parse(JSON.stringify(socket.handshake.headers.cookie.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=');
+    acc[key] = value;
+    return acc;
+  }, {} as Record<string, string>)));
+  const auth = await validateSessionToken(
+    cookieObj['auth-session']
+  );
+  if (!auth || !auth.session) {
+    console.warn('Invalid session token');
+    socket.disconnect(true);
+    return;
+  }
+  console.info('Session token valid, user authenticated for tape:', tape);
+  socket.data.auth = auth;
+}
+
 
 export function registerSvelteKitWebsocket() {
   const io = globalThis.myServerSocket;
@@ -42,40 +83,12 @@ export function registerSvelteKitWebsocket() {
         }
       }
     });
-    console.log(
-      socket.id,
-      'connected to',
-      socket.handshake.headers['x-tape-name'],
-    );
 
-    // todo: imp
-    // I would like something like that, but ws is outside of vite and svelte, without env access
-    // await ensureTapeExists(tape);
+    await validateAndAttachUserInfos(socket);
 
-    // same here, alias + env
-    // if (!socket.handshake.headers.cookie) {
-    //   console.warn('Missing session cookie');
-    //   socket.disconnect(true);
-    //   return;
-    // }
-    // const cookieObj = JSON.parse(socket.handshake.headers.cookie);
-    // const auth = await validateSessionToken(
-    //   cookieObj['auth-session']
-    // );
-    // if (!auth || !auth.session) {
-    //   console.warn('Invalid session token');
-    //   socket.disconnect(true);
-    //   return;
-    // }
-
-    const tape = socket.handshake.headers['x-tape-name'];
-    if (!tape || typeof tape !== 'string') {
-      console.warn('Invalid or missing tape name');
-      socket.disconnect(true);
-      return;
-    }
-
-    await socket.join(tapePrefix + tape);
+    // Join tape room
+    await socket.join(tapePrefix + socket.data.tape);
+    console.info(socket.data.auth.user?.username, 'joined tape', socket.data.tape, 'with socket id', socket.id);
 
     /* * Tab operations handlers * */
     socket.on('tab-opened', (tab: {id: string, kind: TabKind}, callback) => {
@@ -124,21 +137,11 @@ export function registerSvelteKitWebsocket() {
         console.warn('Invalid entry deletion params:', parsed.error);
         return;
       }
-      const saneEntryPath = getValidPathFromTape(tape, parsed.data);
-      const stats = await lstat(saneEntryPath);
-      const isFolder = stats.isDirectory();
 
-      await remove(saneEntryPath);
-			
-      const modifications = [{
-        type: 'removed',
-        oldPath: path.join(getRelativePathFromTape(tape, saneEntryPath), isFolder ? '/' : ''),
-        newPath: '',
-        isFolder
-      }] satisfies EntryModification[];
+      const modif = await deleteEntry(socket.data.tape, parsed.data);
 
-      io.to(tapePrefix + tape)
-        .emit('remoteModification', modifications);
+      io.to(tapePrefix + socket.data.tape)
+        .emit('remoteModification', [modif]);
     });
     socket.on('entry-renamed', async (params: EntryRenamedParams) => {
       const parsed = await entryRenamedSchema.safeParseAsync(params);
@@ -146,60 +149,31 @@ export function registerSvelteKitWebsocket() {
         console.warn('Invalid entry renamed params:', parsed.error);
         return;
       }
-      const saneEntryPath = getValidPathFromTape(tape, parsed.data.entryPath);
-      const sanitizedName = sanitizeFileName(parsed.data.newName);
-      const targetFolder = path.dirname(saneEntryPath);
-      console.log(targetFolder);
-			
-      const newPath = path.resolve(targetFolder, sanitizedName);
 
-      if (saneEntryPath === newPath) {
+      const modif = await renameEntry(socket.data.tape, parsed.data.entryPath, parsed.data.newName);
+      if (!modif) {
         return;
       }
 
-      await move(saneEntryPath, newPath);
-
-      const isFolder = await lstat(newPath).then(stats => stats.isDirectory()).catch(() => false);
-      const modifications = [{
-        type: 'renamed',
-        oldPath: path.join(getRelativePathFromTape(tape, saneEntryPath), isFolder ? '/' : ''),
-        newPath: path.join(getRelativePathFromTape(tape, newPath), isFolder ? '/' : ''),
-        isFolder
-      }] satisfies EntryModification[];
-
-      io.to(tapePrefix + tape)
-        .emit('remoteModification', modifications);
+      io.to(tapePrefix + socket.data.tape)
+        .emit('remoteModification', [modif]);
     });
     socket.on('entry-moved', async (params: EntryMovedParams) => {
-			  // Validation
+      // Validation
       const parsed = await entryMovedSchema.safeParseAsync(params);
       if (!parsed.success) {
         console.warn('Invalid entry moved params:', parsed.error);
         return;
       }
-      const saneEntryPath = getValidPathFromTape(tape, parsed.data.entryPath);
-      const saneDestFolder = getValidPathFromTape(tape, parsed.data.destFolder);
 
-      const entryName = path.basename(saneEntryPath);
-      const newEntryPath = path.resolve(saneDestFolder, entryName);
-
-      if (saneEntryPath === newEntryPath) {
+      const {entryPath, destFolder} = parsed.data;
+      const modif = await moveEntry(socket.data.tape, entryPath, destFolder);
+      if (!modif) {
         return;
       }
-
-      // Operation
-      await move(saneEntryPath, newEntryPath);
-
-      // Emit modification
-      const isFolder = await lstat(newEntryPath).then(stats => stats.isDirectory()).catch(() => false);
-      const modifications = [{
-        type: 'moved',
-        oldPath: path.join(getRelativePathFromTape(tape, saneEntryPath), isFolder ? '/' : ''),
-        newPath: path.join(getRelativePathFromTape(tape, newEntryPath), isFolder ? '/' : ''),
-        isFolder
-      }] satisfies EntryModification[];
-      io.to(tapePrefix + tape)
-        .emit('remoteModification', modifications);
+			
+      io.to(tapePrefix + socket.data.tape)
+        .emit('remoteModification', [modif]);
     });
   });
 }
