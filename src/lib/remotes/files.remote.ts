@@ -1,15 +1,14 @@
 import z from 'zod';
 import path, { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
-import { writeFile, mkdir, readFile, rm, lstat } from 'node:fs/promises';
-import { move } from 'fs-extra/esm';
+import { writeFile, mkdir, readFile, lstat } from 'node:fs/promises';
 import { error } from '@sveltejs/kit';
 import { command, form, getRequestEvent, query } from '$app/server';
 import { createFileTree } from '$lib';
 import { env } from '$env/dynamic/private';
-import { getRelativePathFromTape, getValidPathInTape, sanitizeFileName } from './files.utils';
+import { getRelativePathInTape, getValidPathInTape, sanitizeFileName } from './files.utils';
 import type { FileEntry, FsNode } from '$types/files';
-import type { EntryModification } from '$types/modification';
+import { getServerSocket, tapePrefix } from '../../socket.server';
 
 const NOTE_DIR = env.NOTE_DIR;
 
@@ -71,7 +70,7 @@ export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry
   const content = await readFile(saneFilePath, { encoding: 'utf-8' });
   return {
     name: path.basename(saneFilePath),
-    path: getRelativePathFromTape(saneFilePath),
+    path: getRelativePathInTape(saneFilePath),
     type: 'file',
     content,
     childs: null,
@@ -100,7 +99,7 @@ export const createFile = form(z.object({
     console.info(`Created directory at ${saneFilePath}`);
     return {
       name: newFilename,
-      path: getRelativePathFromTape(saneFilePath),
+      path: getRelativePathInTape(saneFilePath),
       type: 'dir',
       childs: []
     };
@@ -122,9 +121,13 @@ export const createFile = form(z.object({
 
   await getFileTree().refresh();
 
+  const io = getServerSocket();
+  io.to(tapePrefix + params.tape)
+    .emit('remoteModification', []); // will refresh client file tree
+
   return {
     name: newFilename,
-    path: getRelativePathFromTape(saneFilePath),
+    path: getRelativePathInTape(saneFilePath),
     type: 'file',
     content: '',
     childs: null,
@@ -157,7 +160,7 @@ export const createFileCmd = command(z.object({
 
   return {
     name: path.basename(filePath),
-    path: getRelativePathFromTape(filePath),
+    path: getRelativePathInTape(filePath),
     type: 'file',
     content: '',
     childs: null,
@@ -184,7 +187,7 @@ export const createFileIfNotExists = command(z.object({
 
   return {
     name: path.basename(filePath),
-    path: getRelativePathFromTape(filePath),
+    path: getRelativePathInTape(filePath),
     type: 'file',
     content: '',
     childs: null,
@@ -224,82 +227,4 @@ length: ${content.length},
 TS: ${newTimestamp}`);
 
   return newTimestamp;
-});
-
-export const moveEntry = command(z.object({
-  entryPath: z.string(),
-  destFolder: z.string()
-}), async ({ entryPath, destFolder }): Promise<EntryModification[]> => {
-  const saneEntryPath = getValidPathInTape(entryPath);
-  const saneDestFolder = getValidPathInTape(destFolder);
-
-  const entryName = path.basename(saneEntryPath);
-  const newEntryPath = path.resolve(saneDestFolder, entryName);
-
-  if (saneEntryPath === newEntryPath) {
-    return [];
-  }
-
-  await move(saneEntryPath, newEntryPath);
-	
-  const isFolder = await lstat(newEntryPath).then(stats => stats.isDirectory()).catch(() => false);
-  const modifications = [{
-    type: 'moved',
-    oldPath: path.join(getRelativePathFromTape(saneEntryPath), isFolder ? '/' : ''),
-    newPath: path.join(getRelativePathFromTape(saneDestFolder), entryName, isFolder ? '/' : ''),
-    isFolder
-  }] satisfies EntryModification[];
-  console.log(modifications);
-
-  await getFileTree().refresh();
-  return modifications;
-});
-
-export const renameEntry = command(z.object({
-  entryPath: z.string(),
-  newName: z.string()
-}), async ({ entryPath, newName }): Promise<EntryModification[]> => {
-  const saneEntryPath = getValidPathInTape(entryPath);
-  const sanitizedName = sanitizeFileName(newName);
-  const targetFolder = path.dirname(saneEntryPath);
-  const newPath = path.resolve(targetFolder, sanitizedName);
-
-  if (saneEntryPath === newPath) {
-    return [];
-  }
-
-  await move(saneEntryPath, newPath);
-	
-  const isFolder = await lstat(newPath).then(stats => stats.isDirectory()).catch(() => false);
-  const modifications = [{
-    type: 'renamed',
-    oldPath: path.join(getRelativePathFromTape(saneEntryPath), isFolder ? '/' : ''),
-    newPath: path.join(getRelativePathFromTape(newPath), isFolder ? '/' : ''),
-    isFolder
-  }] satisfies EntryModification[];
-  console.log(modifications);
-	
-  await getFileTree().refresh();
-  return modifications;
-});
-
-export const removeEntry = command(z.object({
-  entryPath: z.string()
-}), async ({ entryPath }): Promise<EntryModification[]> => {
-  const saneEntryPath = getValidPathInTape(entryPath);
-  const stats = await lstat(saneEntryPath);
-  const isFolder = stats.isDirectory();
-
-  await rm(saneEntryPath, { recursive: true, force: true });
-
-  const modifications = [{
-    type: 'removed',
-    oldPath: path.join(getRelativePathFromTape(saneEntryPath), isFolder ? '/' : ''),
-    newPath: '',
-    isFolder
-  }] satisfies EntryModification[];
-  console.log(modifications);
-
-  await getFileTree().refresh();
-  return modifications;
 });

@@ -5,8 +5,8 @@ import { FoldState } from '$core/internal/FoldState.svelte';
 import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
 import { Page } from './Page.svelte';
-import { InfoUi } from './InfosUi.svelte';
-import { ClientSocket, getSocket } from '$lib/websocket';
+import { InfoUi, type ModificationOrigin } from './InfosUi.svelte';
+import { type ClientSocket, getSocket } from '$lib/websocket';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 import type { TabFileEntry } from '$types/tabs';
@@ -22,7 +22,7 @@ class CoreAPI {
 	
   readonly infoUi: InfoUi;
 
-  readonly clientSocket: ClientSocket | null;
+  #clientSocket: ClientSocket | null = null;
 	
   constructor() {
     // Internal
@@ -34,14 +34,20 @@ class CoreAPI {
     this.pageStore = new Page(this);
 
     this.infoUi = new InfoUi(this);
-
-    this.clientSocket = getSocket(this);
   }
-
+	
   async init() {
     const tapeName = await getCurrentTape();
     this.foldState.init(tapeName);
     this.pageStore.init();
+    this.#clientSocket = getSocket(this);
+  }
+
+  get clientSocket() {
+    if (!this.#clientSocket) {
+      this.#clientSocket = getSocket(this);
+    }
+    return this.#clientSocket;
   }
 
   /**
@@ -155,13 +161,15 @@ class CoreAPI {
 	 * Method to sync changes between the server and the client
 	 * @fires {@linkcode CoreAPI.tabs}
 	 * @fires {@linkcode CoreAPI.activeTab}
+	 * @fires {@linkcode CoreAPI.activeTabInfos}
+	 * @fires {@linkcode InfoUi.addModificationMessage}
 	 */
-  async syncStates(modifications: EntryModification[]) {
+  async syncStates(modifications: EntryModification[], origin: ModificationOrigin = 'local') {
     await this.#tabStore.syncModifications(modifications);
     await this.foldState.syncModifications(modifications);
 
     for (const mod of modifications) {
-      this.infoUi.addModificationMessage(mod);
+      this.infoUi.addModificationMessage(mod, origin);
     }
   }
 
@@ -178,6 +186,7 @@ class CoreAPI {
   async clear() {
     this.#tabStore.clear();
     this.foldState.clear();
+    this.#clientSocket?.socket.disconnect();
   }
 }
 

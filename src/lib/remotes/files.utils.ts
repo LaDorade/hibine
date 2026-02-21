@@ -40,6 +40,13 @@ export function getFileExtension(fileName: string): string {
   return ext.startsWith('.') ? ext.slice(1) : ext;
 }
 
+export function getValidPathFromTape(tape: string, p: string): string {
+  const sanePath = path.join(NOTE_DIR, tape, sanitizeFilePath(p));
+  if (!isValidPath(sanePath)) {
+    throw new Error(`Invalid path: ${sanePath}`);
+  }
+  return sanePath;
+}
 /**
  * @throws if no tape param is set
  * @throws if path is invalid
@@ -50,18 +57,17 @@ export function getValidPathInTape(p: string): string {
   if (!params.tape) {
     throw new Error('No Tape param');
   }
-  const sanePath = path.join(NOTE_DIR, params.tape, sanitizeFilePath(p));
-  if (!isValidPath(sanePath)) {
-    throw new Error(`Invalid path: ${sanePath}`);
-  }
-  return sanePath;
+  return getValidPathFromTape(params.tape, p);
 }
 
-export function getRelativePathFromTape(fullPath: string): string {
+export function getRelativePathFromTape(tape: string, fullPath: string): string {
+  const tapePath = path.join(NOTE_DIR, tape);
+  return path.relative(tapePath, fullPath);
+}
+export function getRelativePathInTape(fullPath: string): string {
   const { params } = getRequestEvent();
   if (!params.tape) {
     throw new Error('No Tape param');
   }
-  const tapePath = path.join(NOTE_DIR, params.tape);
-  return path.relative(tapePath, fullPath);
+  return getRelativePathFromTape(params.tape, fullPath);
 }

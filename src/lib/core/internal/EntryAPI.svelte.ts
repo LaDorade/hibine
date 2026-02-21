@@ -1,4 +1,3 @@
-import { moveEntry, removeEntry, renameEntry } from '$lib/remotes/files.remote';
 
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { FolderEntry } from '$types/files';
@@ -12,8 +11,7 @@ export class EntryAPI {
 	 * @fires {@linkcode FileAPI.getActiveFile}
 	 */
   removeEntry = async (entryPath: string) => {
-    const modifications = await removeEntry({ entryPath: entryPath });
-    await this.core.syncStates(modifications);
+    this.core.clientSocket?.socket.emit('entry-deleted', entryPath);
   };
   /**
 	 * Rename a file or folder entry
@@ -21,8 +19,7 @@ export class EntryAPI {
 	 * @fires {@linkcode FileAPI.getActiveFile}
 	 */
   renameEntry = async (entryPath: string, newName: string) => {
-    const modifications = await renameEntry({ entryPath: entryPath, newName: newName });
-    await this.core.syncStates(modifications);
+    this.core.clientSocket?.socket.emit('entry-renamed', {entryPath, newName});
   };
   /**
 	 * Move a file or folder entry to a destination folder
@@ -30,7 +27,6 @@ export class EntryAPI {
 	 * @fires {@linkcode FileAPI.getActiveFile}
 	 */
   moveEntry = async (entryPath: string, folderEntry: FolderEntry) => {
-    const modifications = await moveEntry({ entryPath: entryPath, destFolder: folderEntry.path });
-    await this.core.syncStates(modifications);
+    this.core.clientSocket?.socket.emit('entry-moved', {entryPath, destFolder: folderEntry.path});
   };
 }

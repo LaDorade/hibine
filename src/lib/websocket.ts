@@ -2,29 +2,47 @@ import ioClient, {Socket} from 'socket.io-client';
 
 import { createSubscriber } from 'svelte/reactivity';
 import { browser } from '$app/environment';
+import { page } from '$app/state';
+import { getFileTree } from './remotes/files.remote';
+
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { ClientToServerEvents, ServerClientEvents } from '$types/socket';
 
-let socket: ClientSocket | null = null;
+let clientSocket: ClientSocket | null = null;
 export function getSocket(core: CoreAPI) {
   if (!browser) return null;
 	
-  if (!socket) {
+  if (!clientSocket) {
     const { protocol, host } = window.location;
     const url = `${protocol}//${host}`;
-    const iosocket = ioClient(url);
-    socket = new ClientSocket(iosocket, core);
-  } else if (!socket.socket.connected) {
-    socket.socket.connect();
+
+    const tape = page.params.tape;
+    if (!tape) {
+      console.warn('Could not find tape name');
+      return null;
+    };
+
+    const socket = ioClient(url, {extraHeaders: {
+      'x-tape-name': tape
+    }});
+    clientSocket = new ClientSocket(
+      core,
+      socket,
+    );
+  } else if (!clientSocket.socket.connected) {
+    clientSocket.socket.connect();
   }
-  return socket;
+  return clientSocket;
 }
 
-export class ClientSocket {
+class ClientSocket {
   #socket;
   #subscribe;
 
-  constructor(socket: Socket<ServerClientEvents, ClientToServerEvents>, private core: CoreAPI) {
+  constructor(
+		private core: CoreAPI,
+		socket: Socket<ServerClientEvents, ClientToServerEvents>,
+  ) {
     this.#socket = socket;
 
     this.#subscribe = createSubscriber((update) => {
@@ -36,6 +54,10 @@ export class ClientSocket {
         }
         update();
       });
+      socket.on('remoteModification', async (modifications) => {
+        await getFileTree().refresh();
+        await this.core.syncStates(modifications, 'socket');
+      });
     });
   }
 
@@ -45,3 +67,5 @@ export class ClientSocket {
     return this.#socket;
   }
 }
+
+export type {ClientSocket};

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getFileExtension, getRelativePathFromTape, getValidPathInTape, isValidPath, sanitizeFileName, sanitizeFilePath } from './files.utils';
+import { getFileExtension, getRelativePathInTape, getValidPathInTape, isValidPath, sanitizeFileName, sanitizeFilePath } from './files.utils';
 
 describe('files.utils', () => {
   describe('sanitizeFileName', () => {
@@ -98,7 +98,7 @@ describe('files.utils', () => {
     it('should return the correct relative path', () => {
       const input = 'test-data/testing_tape/snup/___dap/t_pe.md';
       const expected = 'snup/___dap/t_pe.md';
-      expect(getRelativePathFromTape(input)).toBe(expected);
+      expect(getRelativePathInTape(input)).toBe(expected);
     });
   });
 
