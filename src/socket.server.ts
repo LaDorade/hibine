@@ -32,9 +32,13 @@ export function registerSvelteKitWebsocket() {
 
   io.on('connection', async (socket) => {
     socket.on('disconnect', () => {
-      for (const [_file, users] of fileUserMap) {
+      for (const [file, users] of fileUserMap) {
         if (users.has(socket.id)) {
           users.delete(socket.id);
+          socket.broadcast.emit('users-on-file', {
+            file,
+            usersNb: fileUserMap.get(file)?.size ?? 0
+          });
         }
       }
     });
