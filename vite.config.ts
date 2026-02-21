@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import lucidePreprocess from 'vite-plugin-lucide-preprocess';
 
-import {initServerWebsocket} from './server/websocket.js';
+import {initServerWebsocket} from './server/setupSocket.js';
 
 import type {HttpServer, Plugin} from 'vite';
 

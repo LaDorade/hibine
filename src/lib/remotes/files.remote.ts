@@ -6,7 +6,7 @@ import { error } from '@sveltejs/kit';
 import { command, form, getRequestEvent, query } from '$app/server';
 import { createFileTree } from '$lib';
 import { env } from '$env/dynamic/private';
-import { getRelativePathFromTape, getValidPathInTape, sanitizeFileName } from './files.utils';
+import { getRelativePathInTape, getValidPathInTape, sanitizeFileName } from './files.utils';
 import type { FileEntry, FsNode } from '$types/files';
 
 const NOTE_DIR = env.NOTE_DIR;
@@ -69,7 +69,7 @@ export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry
   const content = await readFile(saneFilePath, { encoding: 'utf-8' });
   return {
     name: path.basename(saneFilePath),
-    path: getRelativePathFromTape(saneFilePath),
+    path: getRelativePathInTape(saneFilePath),
     type: 'file',
     content,
     childs: null,
@@ -98,7 +98,7 @@ export const createFile = form(z.object({
     console.info(`Created directory at ${saneFilePath}`);
     return {
       name: newFilename,
-      path: getRelativePathFromTape(saneFilePath),
+      path: getRelativePathInTape(saneFilePath),
       type: 'dir',
       childs: []
     };
@@ -122,7 +122,7 @@ export const createFile = form(z.object({
 
   return {
     name: newFilename,
-    path: getRelativePathFromTape(saneFilePath),
+    path: getRelativePathInTape(saneFilePath),
     type: 'file',
     content: '',
     childs: null,
@@ -155,7 +155,7 @@ export const createFileCmd = command(z.object({
 
   return {
     name: path.basename(filePath),
-    path: getRelativePathFromTape(filePath),
+    path: getRelativePathInTape(filePath),
     type: 'file',
     content: '',
     childs: null,
@@ -182,7 +182,7 @@ export const createFileIfNotExists = command(z.object({
 
   return {
     name: path.basename(filePath),
-    path: getRelativePathFromTape(filePath),
+    path: getRelativePathInTape(filePath),
     type: 'file',
     content: '',
     childs: null,
