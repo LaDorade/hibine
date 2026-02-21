@@ -5,7 +5,7 @@ import { FoldState } from '$core/internal/FoldState.svelte';
 import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
 import { Page } from './Page.svelte';
-import { InfoUi } from './InfosUi.svelte';
+import { InfoUi, type ModificationOrigin } from './InfosUi.svelte';
 import { type ClientSocket, getSocket } from '$lib/websocket';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
@@ -161,13 +161,15 @@ class CoreAPI {
 	 * Method to sync changes between the server and the client
 	 * @fires {@linkcode CoreAPI.tabs}
 	 * @fires {@linkcode CoreAPI.activeTab}
+	 * @fires {@linkcode CoreAPI.activeTabInfos}
+	 * @fires {@linkcode InfoUi.addModificationMessage}
 	 */
-  async syncStates(modifications: EntryModification[]) {
+  async syncStates(modifications: EntryModification[], origin: ModificationOrigin = 'local') {
     await this.#tabStore.syncModifications(modifications);
     await this.foldState.syncModifications(modifications);
 
     for (const mod of modifications) {
-      this.infoUi.addModificationMessage(mod);
+      this.infoUi.addModificationMessage(mod, origin);
     }
   }
 

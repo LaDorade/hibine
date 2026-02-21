@@ -6,14 +6,26 @@ import { command } from '$app/server';
 
 import { getRelativePathFromTape, getValidPathInTape, sanitizeFileName } from './files.utils';
 import { getFileTree } from './files.remote';
+import { getServerSocket } from '../../../server/websocket';
+
 import type { EntryModification } from '$types/modification';
 
+async function syncModification(modifications: EntryModification[]) {
+  console.log(modifications);
 
+  const io = getServerSocket();
+  io.emit('remoteModification', modifications);
+}
 
+/**
+ * Move an entry in a tape
+ * @fires socket 'remoteModification' event with modifications of type 'moved'
+ */
 export const moveEntry = command(z.object({
   entryPath: z.string(),
   destFolder: z.string()
-}), async ({ entryPath, destFolder }): Promise<EntryModification[]> => {
+}), async ({ entryPath, destFolder }): Promise<void> => {
+  // Validation
   const saneEntryPath = getValidPathInTape(entryPath);
   const saneDestFolder = getValidPathInTape(destFolder);
 
@@ -21,11 +33,14 @@ export const moveEntry = command(z.object({
   const newEntryPath = path.resolve(saneDestFolder, entryName);
 
   if (saneEntryPath === newEntryPath) {
-    return [];
+    return;
   }
 
+  // Operation
   await move(saneEntryPath, newEntryPath);
+  await getFileTree().refresh();
 
+  // Emit modification
   const isFolder = await lstat(newEntryPath).then(stats => stats.isDirectory()).catch(() => false);
   const modifications = [{
     type: 'moved',
@@ -33,26 +48,29 @@ export const moveEntry = command(z.object({
     newPath: path.join(getRelativePathFromTape(saneDestFolder), entryName, isFolder ? '/' : ''),
     isFolder
   }] satisfies EntryModification[];
-  console.log(modifications);
 
-  await getFileTree().refresh();
-  return modifications;
+  await syncModification(modifications);
 });
 
+/**
+ * Rename an entry in a tape
+ * @fires socket 'remoteModification' event with modifications of type 'renamed'
+ */
 export const renameEntry = command(z.object({
   entryPath: z.string(),
   newName: z.string()
-}), async ({ entryPath, newName }): Promise<EntryModification[]> => {
+}), async ({ entryPath, newName }): Promise<void> => {
   const saneEntryPath = getValidPathInTape(entryPath);
   const sanitizedName = sanitizeFileName(newName);
   const targetFolder = path.dirname(saneEntryPath);
   const newPath = path.resolve(targetFolder, sanitizedName);
 
   if (saneEntryPath === newPath) {
-    return [];
+    return;
   }
 
   await move(saneEntryPath, newPath);
+  await getFileTree().refresh();
 
   const isFolder = await lstat(newPath).then(stats => stats.isDirectory()).catch(() => false);
   const modifications = [{
@@ -61,20 +79,23 @@ export const renameEntry = command(z.object({
     newPath: path.join(getRelativePathFromTape(newPath), isFolder ? '/' : ''),
     isFolder
   }] satisfies EntryModification[];
-  console.log(modifications);
-	
-  await getFileTree().refresh();
-  return modifications;
+
+  await syncModification(modifications);
 });
 
+/**
+ * Remove an entry in a tape
+ * @fires socket 'remoteModification' event with modifications of type 'removed'
+ */
 export const removeEntry = command(z.object({
   entryPath: z.string()
-}), async ({ entryPath }): Promise<EntryModification[]> => {
+}), async ({ entryPath }): Promise<void> => {
   const saneEntryPath = getValidPathInTape(entryPath);
   const stats = await lstat(saneEntryPath);
   const isFolder = stats.isDirectory();
 
   await rm(saneEntryPath, { recursive: true, force: true });
+  await getFileTree().refresh();
 
   const modifications = [{
     type: 'removed',
@@ -82,8 +103,6 @@ export const removeEntry = command(z.object({
     newPath: '',
     isFolder
   }] satisfies EntryModification[];
-  console.log(modifications);
 
-  await getFileTree().refresh();
-  return modifications;
+  await syncModification(modifications);
 });

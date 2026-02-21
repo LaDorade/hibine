@@ -3,6 +3,7 @@ import ioClient, {Socket} from 'socket.io-client';
 import { createSubscriber } from 'svelte/reactivity';
 import { browser } from '$app/environment';
 import { page } from '$app/state';
+import { getFileTree } from './remotes/files.remote';
 
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { ClientToServerEvents, ServerClientEvents } from '$types/socket';
@@ -52,6 +53,10 @@ class ClientSocket {
           this.core.activeTabInfos.usersNb = usersNb;
         }
         update();
+      });
+      socket.on('remoteModification', async (modifications) => {
+        await getFileTree().refresh();
+        await this.core.syncStates(modifications, 'socket');
       });
     });
   }

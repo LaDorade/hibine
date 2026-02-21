@@ -5,13 +5,15 @@ import lucidePreprocess from 'vite-plugin-lucide-preprocess';
 
 import {initServerWebsocket} from './server/websocket.js';
 
-import type {HttpServer} from 'vite';
+import type {HttpServer, Plugin} from 'vite';
 
-export const webSocketServer = {
-  name: 'webSocketServer',
-  configureServer(server: {httpServer: HttpServer | null}) {
-    initServerWebsocket(server.httpServer);
-  }
+export const webSocketServer: () => Plugin = () => {
+  return {
+    name: 'webSocketServer',
+    configureServer(server: {httpServer: HttpServer | null}) {
+      initServerWebsocket(server.httpServer);
+    }
+  };
 };
 
 export default defineConfig({
@@ -19,6 +21,6 @@ export default defineConfig({
     tailwindcss(),
     sveltekit(),
     lucidePreprocess(),
-    webSocketServer
+    webSocketServer()
   ],
 });

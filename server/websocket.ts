@@ -2,27 +2,39 @@ import {Server} from 'socket.io';
 
 import type { TabKind } from '$types/tabs';
 import type {HttpServer} from 'vite';
-
 import type { ClientToServerEvents, ServerClientEvents } from '$types/socket';
 
-
-const fileUserMap = new Map<
-	string, // file path
-	Set<string> // users connected
->();
 
 const tapeKey = 'tape:';
 
 export function initServerWebsocket(server: HttpServer | null) {
-
   if (!server) {
     console.error('could not start websocket services');
     return;
   }
 
-  const io = new Server<ClientToServerEvents, ServerClientEvents, object, object>(server);
+  if (globalThis.myServerSocket) {
+    globalThis.myServerSocket.close();
+    globalThis.myServerSocket = null;
+  }
+
+  const fileUserMap = new Map<
+		string, // file path
+		Set<string> // users connected
+	>();
+
+  const io = new Server<ClientToServerEvents, ServerClientEvents>(server);
+  globalThis.myServerSocket = io;
+
 
   io.on('connection', async (socket) => {
+    socket.on('disconnect', () => {
+      for (const [_file, users] of fileUserMap) {
+        if (users.has(socket.id)) {
+          users.delete(socket.id);
+        }
+      }
+    });
     console.log(
       'a user connected',
       socket.id,
@@ -58,9 +70,7 @@ export function initServerWebsocket(server: HttpServer | null) {
       return;
     }
 
-    await socket.join(
-      tapeKey + tape
-    );
+    await socket.join(tapeKey + tape);
 
     socket.on('tab-opened', (tab: {id: string, kind: TabKind}, callback) => {
       if (!socket.id || tab.kind !== 'file') return;
@@ -101,13 +111,13 @@ export function initServerWebsocket(server: HttpServer | null) {
       });
       console.log(fileUserMap.get(tab.id)?.size, 'users on', tab.id);
     });
-
-    socket.on('disconnect', () => {
-      for (const [_file, users] of fileUserMap) {
-        if (users.has(socket.id)) {
-          users.delete(socket.id);
-        }
-      }
-    });
   });
+}
+
+export function getServerSocket() {
+  const io = globalThis.myServerSocket;
+  if (!io) {
+    throw new Error('Websocket server not initialized');
+  }
+  return io;
 }
