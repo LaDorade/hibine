@@ -11,7 +11,7 @@ export class EntryAPI {
 	 * @fires {@linkcode FileAPI.getActiveFile}
 	 */
   removeEntry = async (entryPath: string) => {
-    this.core.clientSocket?.socket.emit('entry-deleted', entryPath);
+    this.core.clientSocket?.emit('entry-deleted', entryPath);
   };
   /**
 	 * Rename a file or folder entry
@@ -19,7 +19,7 @@ export class EntryAPI {
 	 * @fires {@linkcode FileAPI.getActiveFile}
 	 */
   renameEntry = async (entryPath: string, newName: string) => {
-    this.core.clientSocket?.socket.emit('entry-renamed', {entryPath, newName});
+    this.core.clientSocket?.emit('entry-renamed', {entryPath, newName});
   };
   /**
 	 * Move a file or folder entry to a destination folder
@@ -27,6 +27,6 @@ export class EntryAPI {
 	 * @fires {@linkcode FileAPI.getActiveFile}
 	 */
   moveEntry = async (entryPath: string, folderEntry: FolderEntry) => {
-    this.core.clientSocket?.socket.emit('entry-moved', {entryPath, destFolder: folderEntry.path});
+    this.core.clientSocket?.emit('entry-moved', {entryPath, destFolder: folderEntry.path});
   };
 }
