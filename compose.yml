@@ -1,7 +1,7 @@
 services:
   hibine:
-    # build: .
-    image: doradea/hibine:latest
+    build: .
+    # image: doradea/hibine:latest
     volumes:
       - ./notes/:/app/data/
     environment:
