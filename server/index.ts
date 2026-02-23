@@ -1,7 +1,6 @@
 import express from 'express';
-import { handler } from '../build/handler.js';
-import { initServerWebsocket } from './websocket.ts';
 import { createServer } from 'http';
+import { initServerWebsocket } from './setupSocket.ts';
 
 const app = express();
 const server = createServer(app);
@@ -10,6 +9,7 @@ const server = createServer(app);
 initServerWebsocket(server);
 
 // sveltekit
+const handler = (await import('../build/handler.js')).handler; // dynamic import to avoid loading sveltekit server hooks before websocket server init
 app.use(handler);
 
 // start server

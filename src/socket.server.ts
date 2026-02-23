@@ -60,7 +60,7 @@ export function registerSvelteKitWebsocket() {
   const io = globalThis.myServerSocket;
   if (!io) {
     console.error('Websocket server not initialized');
-    return;
+    throw new Error('Websocket server not initialized');
   }
 
   const fileUserMap = new Map<
