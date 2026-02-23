@@ -35,6 +35,9 @@ export function getSocket(core: CoreAPI) {
   return clientSocket;
 }
 
+/**
+ * Small wrapper around socket.io-client instance to handle reactivity in Svelte
+ */
 class ClientSocket {
   #socket;
   #subscribe;

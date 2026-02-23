@@ -6,7 +6,7 @@ import { getCurrentTape } from '$lib/remotes/files.remote';
 import { ViewMap } from '$components/Main/View';
 import { Page } from './Page.svelte';
 import { InfoUi, type ModificationOrigin } from './InfosUi.svelte';
-import { type ClientSocket, getSocket } from '$lib/websocket';
+import { type ClientSocket, getSocket } from '$lib/clientSocket';
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 import type { TabFileEntry } from '$types/tabs';
@@ -43,11 +43,14 @@ class CoreAPI {
     this.#clientSocket = getSocket(this);
   }
 
+  /**
+	 * @reactive call to the socket instance in a reactive context to subscribe to its events and get the latest socket data
+	 */
   get clientSocket() {
     if (!this.#clientSocket) {
       this.#clientSocket = getSocket(this);
     }
-    return this.#clientSocket;
+    return this.#clientSocket?.socket ?? null;
   }
 
   /**
