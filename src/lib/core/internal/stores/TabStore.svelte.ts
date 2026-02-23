@@ -28,7 +28,7 @@ export class TabStore {
       id: tab.id,
     };
 
-    this.core.clientSocket?.socket.emit('tab-opened', { 
+    this.core.clientSocket?.emit('tab-opened', { 
       id: tab.id,
       kind: tab.kind
     }, (users: number) => {
@@ -51,7 +51,7 @@ export class TabStore {
 
 
     this.tabs = afterTabs;
-    this.core.clientSocket?.socket.emit('tab-closed', { 
+    this.core.clientSocket?.emit('tab-closed', { 
       id: tab!.id,
       kind: tab!.kind
     });

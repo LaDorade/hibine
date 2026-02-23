@@ -14,9 +14,19 @@
 
 <div class={[
   'border-t',
-  coreAPI.clientSocket?.socket.connected ? 'border-green-400/40' : 'border-red-500/80',
-  'md:hidden grow w-full h-12 z-10 grid grid-flow-col items-center',
+  coreAPI.clientSocket?.connected ? 'border-green-500' : 'border-red-500',
+  'md:hidden w-full h-12 z-10 grid grid-cols-[3rem_1fr_1fr_1fr] bg-gray-800 gap-0',
 ]}>
+  <div class=" h-full w-full flex justify-center items-center bg-gray-800">
+    {#if coreAPI.clientSocket?.connected}
+      <span class="text-green-500 flex gap-1 justify-center items-center text-xs font-light">
+        {coreAPI.activeTabInfos?.usersNb ? `(${coreAPI.activeTabInfos?.usersNb})` : ''}
+        <span class="block bg-green-500 w-2 h-2 shadow-[2px_2px] shadow-black"></span>
+      </span>
+    {:else}
+      <span class=" bg-red-500 w-2 h-2 shadow-[2px_2px] shadow-black"></span>
+    {/if}
+  </div>
   <button
     onclick={() => {
       const newFile = prompt('New file name');
@@ -40,7 +50,7 @@
   </button>
   <Drawer.Root bind:open={viewportStore.isMobileSidebarOpen}>
     <Drawer.Trigger
-      class="h-full w-full flex justify-center items-center px-4 text-gray-400 hover:text-white cursor-pointer
+      class="w-full h-full flex justify-center items-center px-4 text-gray-400 hover:text-white cursor-pointer
         bg-gray-800"
     >
       <FolderTree strokeWidth={1} />

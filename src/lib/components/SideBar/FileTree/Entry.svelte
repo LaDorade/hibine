@@ -82,6 +82,7 @@
     <Context.Item
       data-testid="rename-entry-button"
       inset
+      disabled={!coreAPI.clientSocket?.connected}
       onclick={(e) => {
         e.stopPropagation();
         renaming = true;
@@ -92,6 +93,7 @@
     <Context.Item
       data-testid="delete-entry-button"
       inset
+      disabled={!coreAPI.clientSocket?.connected}
       onclick={async (e) => {
         e.stopPropagation();
         open = false;
