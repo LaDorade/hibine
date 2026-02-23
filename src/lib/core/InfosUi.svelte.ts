@@ -1,6 +1,8 @@
 import type { EntryModification } from '$types/modification';
 import type { CoreAPI } from './CoreAPI.svelte';
 
+export type ModificationOrigin = 'local' | 'socket';
+
 export class InfoUi {
   #maxMessages = 100;
   messageQueue: string[] = $state([]);
@@ -8,23 +10,23 @@ export class InfoUi {
 
   constructor(private coreAPI: CoreAPI) {}
 
-  addModificationMessage(mod: EntryModification) {
-    let message = '';
+  addModificationMessage(mod: EntryModification, kind: ModificationOrigin = 'local') {
+    let message = `[${kind}] `;
     switch (mod.type) {
     case 'created':
-      message = `Created entry "${mod.newPath}"`;
+      message += `Created entry "${mod.newPath}"`;
       break;
     case 'removed':
-      message = `Deleted entry "${mod.oldPath}"`;
+      message += `Deleted entry "${mod.oldPath}"`;
       break;
     case 'renamed':
-      message = `Renamed entry "${mod.oldPath}" to "${mod.newPath}"`;
+      message += `Renamed entry "${mod.oldPath}" to "${mod.newPath}"`;
       break;
     case 'moved':
-      message = `Moved entry "${mod.oldPath}" to "${mod.newPath}"`;
+      message += `Moved entry "${mod.oldPath}" to "${mod.newPath}"`;
       break;
     default:
-      message = `Unknown modification on entry "${mod.oldPath}"`;
+      message += `Unknown modification on entry "${mod.oldPath}"`;
     }
     this.addMessage(message);
   }

@@ -22,13 +22,14 @@
       </div>
     {/key}
     <div class="flex gap-2 items-center">
-      {#if coreAPI.clientSocket?.socket?.connected}
-        <span class="text-green-400">
-          WS Connected {coreAPI.activeTab ? coreAPI.activeTabInfos?.usersNb : ''}
+      {#if coreAPI.clientSocket?.connected}
+        <span class="text-green-500 flex gap-2 justify-center items-center">
+          {coreAPI.activeTabInfos?.usersNb ? `(${coreAPI.activeTabInfos?.usersNb} on file)` : ''}
+          <span class="block bg-green-500 w-2 h-2 shadow-[2px_2px] shadow-black"></span>
         </span>
       {:else}
-        <span class="text-red-400">
-          WS Disconnected
+        <span class="text-red-400 flex gap-2 justify-center items-center">
+          <span class="block bg-red-500 w-2 h-2 shadow-[2px_2px] shadow-black"></span>
         </span>
       {/if}
       {#if settings.saveSet.saving}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import { coreAPI } from '$core/CoreAPI.svelte';
   import { page } from '$app/state';
   import { CassetteTape } from '@lucide/svelte';
   import * as Tooltip from '$lib/components/ui/tooltip';
@@ -22,6 +23,8 @@
         'flex items-center gap-3 px-3 h-12 text-gray-200 bg-gray-800 hover:bg-gray-700', 
         'border-b-4 border-black',
         'transition-all duration-150',
+        'border-l',
+        coreAPI.clientSocket?.connected ? 'border-l-green-500' : 'border-l-red-500',
         className
       ]}
         href={resolve('/')}
