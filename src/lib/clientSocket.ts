@@ -49,7 +49,13 @@ class ClientSocket {
     this.#socket = socket;
 
     this.#subscribe = createSubscriber((update) => {
-      socket.on('connect', update);
+      socket.on('connect', async () => {
+        if (this.core.activeTab) {
+          // mini hack to trigger emit to the server on reconnect
+          await this.core.activateTab(this.core.activeTab.id, false);
+        }
+        update();
+      });
       socket.on('disconnect', update);
       socket.on('users-on-file', ({file, usersNb}: {file: string, usersNb: number}) => {
         if (file === this.core.activeTab?.id && this.core.activeTabInfos) {
