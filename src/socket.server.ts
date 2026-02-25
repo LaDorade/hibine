@@ -6,7 +6,7 @@ import { deleteEntry, moveEntry, renameEntry } from '$lib/server/entries';
 import type { TabKind } from '$types/tabs';
 import type { Socket } from 'socket.io';
 
-export const tapePrefix = 'tape:';
+export const TAPE_PREFIX = 'tape:';
 
 export function getServerSocket() {
   if (!globalThis.myServerSocket) {
@@ -87,7 +87,7 @@ export function registerSvelteKitWebsocket() {
     await validateAndAttachUserInfos(socket);
 
     // Join tape room
-    await socket.join(tapePrefix + socket.data.tape);
+    await socket.join(TAPE_PREFIX + socket.data.tape);
     console.info(socket.data.auth.user?.username, 'joined tape', socket.data.tape, 'with socket id', socket.id);
 
     /* * Tab operations handlers * */
@@ -98,7 +98,7 @@ export function registerSvelteKitWebsocket() {
         socket.id, 
         tab,
         'on',
-        [...socket.rooms].filter(r => r.startsWith('tape:')).map(r => r.slice(tapePrefix.length)).join()
+        [...socket.rooms].filter(r => r.startsWith('tape:')).map(r => r.slice(TAPE_PREFIX.length)).join()
       );
 
       if (!fileUserMap.has(tab.id)) {
@@ -140,7 +140,7 @@ export function registerSvelteKitWebsocket() {
 
       const modif = await deleteEntry(socket.data.tape, parsed.data);
 
-      io.to(tapePrefix + socket.data.tape)
+      io.to(TAPE_PREFIX + socket.data.tape)
         .emit('remoteModification', [modif]);
     });
     socket.on('entry-renamed', async (params: EntryRenamedParams) => {
@@ -155,7 +155,7 @@ export function registerSvelteKitWebsocket() {
         return;
       }
 
-      io.to(tapePrefix + socket.data.tape)
+      io.to(TAPE_PREFIX + socket.data.tape)
         .emit('remoteModification', [modif]);
     });
     socket.on('entry-moved', async (params: EntryMovedParams) => {
@@ -172,7 +172,7 @@ export function registerSvelteKitWebsocket() {
         return;
       }
 			
-      io.to(tapePrefix + socket.data.tape)
+      io.to(TAPE_PREFIX + socket.data.tape)
         .emit('remoteModification', [modif]);
     });
   });
