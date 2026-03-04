@@ -49,6 +49,9 @@ class ClientSocket {
     this.#socket = socket;
 
     this.#subscribe = createSubscriber((update) => {
+      socket.io.on('reconnect', async () => {
+        await getFileTree().refresh();
+      });
       socket.on('connect', async () => {
         if (this.core.activeTab) {
           // mini hack to trigger emit to the server on reconnect
@@ -67,6 +70,16 @@ class ClientSocket {
         await getFileTree().refresh();
         await this.core.syncStates(modifications, 'socket');
       });
+
+      return () => {
+        socket.io.off('reconnect');
+        socket.off('connect');
+        socket.off('disconnect');
+        socket.off('users-on-file');
+        socket.off('remoteModification');
+        socket.disconnect();
+        console.log('unsubscribed from socket events');
+      };
     });
   }
 
