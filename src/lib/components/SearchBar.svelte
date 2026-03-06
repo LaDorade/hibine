@@ -8,9 +8,10 @@
   interface Props {
     searchBarOpen: boolean;
   }
-  let { searchBarOpen = $bindable() }: Props = $props();
+  let { 
+    searchBarOpen = $bindable() 
+  }: Props = $props();
 
-  let open = $derived(searchBarOpen);
   let query = $state('');
 
   // generate "unnecessary waterfall warning" warning but seems legit 
@@ -53,19 +54,19 @@
   }
 
   function openFile(entry: FileEntry) {
-    open = false;
+    searchBarOpen = false;
     coreAPI.openFile(entry);
     query = '';
   }
 
   function createAndOpenFile(fileName: string) {
-    open = false;
+    searchBarOpen = false;
     coreAPI.files.createAndOpenFile(fileName);
     query = '';
   }
 </script>
 
-<Command.Dialog bind:open {filter}>
+<Command.Dialog bind:open={searchBarOpen} {filter}>
   <Command.Input bind:value={query} placeholder="Search a file" />
   <Command.List>
     <Command.Group heading="Files">

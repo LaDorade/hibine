@@ -12,14 +12,10 @@
 
 
   async function handleKeys(e: KeyboardEvent) {
-    if (e.metaKey && e.key === 'k') {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      stopEvent(e);
       // open the command palette/file selector
-      stopEvent(e);
       searchBarOpen = !searchBarOpen;
-    } else if (e.metaKey && e.key === 's') {
-      // save the current file
-      stopEvent(e);
-    // TODO: add small feedback
     }
   }
 
