@@ -4,6 +4,8 @@ import { createSubscriber } from 'svelte/reactivity';
 import { browser } from '$app/environment';
 import { page } from '$app/state';
 import { getFileTree } from './remotes/files.remote';
+import { toast } from 'svelte-sonner';
+import { formatModificationsMessage } from './modifications/utils';
 
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { ClientToServerEvents, ServerClientEvents } from '$types/socket';
@@ -69,6 +71,8 @@ class ClientSocket {
       socket.on('remoteModification', async (modifications) => {
         await getFileTree().refresh();
         await this.core.syncStates(modifications, 'socket');
+        toast.info(`[socket] ${formatModificationsMessage(modifications)}`);
+        update();
       });
 
       return () => {

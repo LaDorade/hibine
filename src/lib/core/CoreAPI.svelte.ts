@@ -7,6 +7,7 @@ import { ViewMap } from '$components/Main/View';
 import { Page } from './Page.svelte';
 import { InfoUi, type ModificationOrigin } from './InfosUi.svelte';
 import { type ClientSocket, getSocket } from '$lib/clientSocket';
+
 import type { FileEntry } from '$types/files';
 import type { EntryModification } from '$types/modification';
 import type { TabFileEntry } from '$types/tabs';
@@ -51,6 +52,10 @@ class CoreAPI {
       this.#clientSocket = getSocket(this);
     }
     return this.#clientSocket?.socket ?? null;
+  }
+
+  resetClientSocket() {
+    this.#clientSocket = null;
   }
 
   /**
@@ -195,3 +200,10 @@ class CoreAPI {
 
 export type { CoreAPI };
 export const coreAPI = new CoreAPI();
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    coreAPI.resetClientSocket();
+    const _s = coreAPI.clientSocket; // trigger get
+  });
+}

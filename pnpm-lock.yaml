@@ -77,6 +77,9 @@ importers:
       socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3
+      svelte-sonner:
+        specifier: ^1.0.8
+        version: 1.0.8(svelte@5.41.3)
       vite-plugin-lucide-preprocess:
         specifier: ^1.4.6
         version: 1.4.6(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))
@@ -2984,6 +2987,11 @@ packages:
     peerDependencies:
       svelte: ^5.7.0
 
+  runed@0.28.0:
+    resolution: {integrity: sha512-k2xx7RuO9hWcdd9f+8JoBeqWtYrm5CALfgpkg2YDB80ds/QE4w0qqu34A7fqiAwiBBSBQOid7TLxwxVC27ymWQ==}
+    peerDependencies:
+      svelte: ^5.7.0
+
   runed@0.29.2:
     resolution: {integrity: sha512-0cq6cA6sYGZwl/FvVqjx9YN+1xEBu9sDDyuWdDW1yWX7JF2wmvmVKfH+hVCZs+csW+P3ARH92MjI3H9QTagOQA==}
     peerDependencies:
@@ -3208,6 +3216,11 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-sonner@1.0.8:
+    resolution: {integrity: sha512-TjF+MY8RpBSQfker9+mBHbdx8szrXzhLuqFE89WGgTRv1uYFFc/no10kRvSvSQ7zaAv90APq7qpP145ZcsvUwQ==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte-toolbelt@0.10.6:
     resolution: {integrity: sha512-YWuX+RE+CnWYx09yseAe4ZVMM7e7GRFZM6OYWpBKOb++s+SQ8RBIMMe+Bs/CznBMc0QPLjr+vDBxTAkozXsFXQ==}
@@ -6382,6 +6395,11 @@ snapshots:
       esm-env: 1.2.2
       svelte: 5.41.3
 
+  runed@0.28.0(svelte@5.41.3):
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.41.3
+
   runed@0.29.2(svelte@5.41.3):
     dependencies:
       esm-env: 1.2.2
@@ -6677,6 +6695,11 @@ snapshots:
       postcss-scss: 4.0.9(postcss@8.5.6)
       postcss-selector-parser: 7.1.0
     optionalDependencies:
+      svelte: 5.41.3
+
+  svelte-sonner@1.0.8(svelte@5.41.3):
+    dependencies:
+      runed: 0.28.0(svelte@5.41.3)
       svelte: 5.41.3
 
   svelte-toolbelt@0.10.6(@sveltejs/kit@2.48.0(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)))(svelte@5.41.3)(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)))(svelte@5.41.3):

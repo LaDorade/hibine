@@ -10,7 +10,7 @@
       newFileInput.focus();
     }
   }
-	
+
   let lastCreatedPath = '';
   $effect(() => {
     if (createFile.result && 
@@ -25,7 +25,7 @@
         newPath: createFile.result.path,
         oldPath: '',
         type: 'created'
-      });	
+      });
     }
   });
 </script>

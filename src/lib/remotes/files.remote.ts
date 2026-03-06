@@ -123,7 +123,12 @@ export const createFile = form(z.object({
 
   const io = getServerSocket();
   io.to(TAPE_PREFIX + params.tape)
-    .emit('remoteModification', []); // will refresh client file tree
+    .emit('remoteModification', [{
+      type: 'created',
+      newPath: getRelativePathInTape(saneFilePath),
+      oldPath: '',
+      isFolder: false
+    }]); // will refresh client file tree
 
   return {
     name: newFilename,
