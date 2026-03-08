@@ -1,4 +1,4 @@
-import { createFileCmd, createFileIfNotExists, getFileContent, resolveFile, writeFileContent } from '$lib/remotes/files.remote';
+import { createFileIfNotExists, getFileContent, resolveFile, writeFileContent } from '$lib/remotes/files.remote';
 import type { CoreAPI } from '$core/CoreAPI.svelte';
 import type { FileEntry } from '$types/files';
 
@@ -40,17 +40,6 @@ export class FileAPI {
     });
   };
 
-  async createFile(filePath: string): Promise<FileEntry> {
-    const file = await createFileCmd({filePath});
-    this.core.infoUi.addModificationMessage({
-      type: 'created',
-      oldPath: '',
-      newPath: filePath,
-      isFolder: false
-    });
-    return file;
-  }
-
   /**
 	 * Creates a file if it does not exist and opens it in a new tab.
 	 * @fires {@linkcode CoreAPI.tabs} – a new tab is created for the file
@@ -61,7 +50,6 @@ export class FileAPI {
     await this.core.openFile(file);
     this.core.infoUi.addModificationMessage({
       type: 'created',
-      oldPath: '',	
       newPath: filePath,
       isFolder: false
     });

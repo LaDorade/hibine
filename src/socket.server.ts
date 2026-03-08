@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { validateSessionToken } from '$lib/server/auth';
 import { tapeExists } from '$lib/server/tape.utils';
-import { deleteEntry, moveEntry, renameEntry } from '$lib/server/entries';
+import { deleteEntry, moveEntry, renameEntry, createEntry } from '$lib/server/entries';
 
 import type { TabKind } from '$types/tabs';
 import type { Socket } from 'socket.io';
+import type { CreateEntryResult } from '$types/entries';
 
 export const TAPE_PREFIX = 'tape:';
 
@@ -131,6 +132,29 @@ export function registerSvelteKitWebsocket() {
     });
 
     /* * Entry operations handlers * */
+
+    socket.on('entry-created', async (
+      entryPath: string,
+      callback: (result: CreateEntryResult) => void
+    ) => {
+      const parsed = await entryCreatedSchema.safeParseAsync(entryPath);
+      if (!parsed.success) {
+        console.warn('Invalid entry creation params:', parsed.error);
+        return callback(['invalid-name', null]);
+      }
+
+      const [error, modif] = await createEntry(socket.data.tape, parsed.data);
+      if (error || !modif) {
+        return callback([error, null]);
+      }
+
+      callback([null, modif]); // send the new file information back to the caller
+
+      socket.broadcast
+        .to(TAPE_PREFIX + socket.data.tape)
+        .emit('remoteModification', [modif]);
+    });
+
     socket.on('entry-deleted', async (entryDeletion: EntryDeletedParams) => {
       const parsed = await entryDeletedSchema.safeParseAsync(entryDeletion);
       if (!parsed.success) {
@@ -178,6 +202,7 @@ export function registerSvelteKitWebsocket() {
   });
 }
 
+const entryCreatedSchema = z.string();
 const entryDeletedSchema = z.string();
 const entryRenamedSchema = z.object({
   entryPath: z.string(),

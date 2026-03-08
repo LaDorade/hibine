@@ -26,7 +26,7 @@ export class InfoUi {
       message += `Moved entry "${mod.oldPath}" to "${mod.newPath}"`;
       break;
     default:
-      message += `Unknown modification on entry "${mod.oldPath}"`;
+      message += `Unknown modification on entry "${mod satisfies never}"`;
     }
     this.addMessage(message);
   }

@@ -36,7 +36,7 @@
 {/if}
 
 <svelte:head>
-  <title>{await getCurrentTape()} – Hibine</title>
+  <title>{await getCurrentTape()} - Hibine</title>
 </svelte:head>
 
 <main

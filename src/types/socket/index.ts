@@ -1,3 +1,4 @@
+import type { CreateEntryResult } from '$types/entries';
 import type { EntryModification } from '$types/modification';
 import type { TabKind } from '$types/tabs';
 
@@ -8,6 +9,10 @@ export type ClientToServerEvents = {
 	) => void
 	'tab-closed': (_params: {id: string, kind: TabKind}) => void;
 
+	'entry-created': (
+		_params: string,
+		callback: (result: CreateEntryResult) => void
+	) => void;
 	'entry-deleted': (_params: string) => void;
 	'entry-renamed': (_params: {entryPath: string, newName: string}) => void;
 	'entry-moved': (_params: {entryPath: string, destFolder: string}) => void;

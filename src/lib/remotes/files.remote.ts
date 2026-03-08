@@ -3,12 +3,12 @@ import path, { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { writeFile, mkdir, readFile, lstat } from 'node:fs/promises';
 import { error } from '@sveltejs/kit';
-import { command, form, getRequestEvent, query } from '$app/server';
+import { command, getRequestEvent, query } from '$app/server';
 import { createFileTree } from '$lib';
 import { env } from '$env/dynamic/private';
-import { getRelativePathInTape, getValidPathInTape, sanitizeFileName } from './files.utils';
+import { getRelativePathInTape, getValidPathInTape } from './files.utils';
+
 import type { FileEntry, FsNode } from '$types/files';
-import { getServerSocket, TAPE_PREFIX } from '../../socket.server';
 
 const NOTE_DIR = env.NOTE_DIR;
 
@@ -78,96 +78,6 @@ export const resolveFile = query(z.string(), async (filePath): Promise<FileEntry
   };
 });
 
-export const createFile = form(z.object({
-  fileName: z.string()
-}), async ( {fileName}, invalid): Promise<FsNode> => {
-  if (!fileName.trim() || /[<>:"|?*]/.test(fileName)) {
-    return invalid(invalid.fileName(`Invalid file name: ${fileName}`));
-  }
-
-  const saneFilePath = getValidPathInTape(fileName);
-  const newFilename = sanitizeFileName(fileName.split('/').pop() || 'untitled');
-
-  const {params} = getRequestEvent();
-  if (!params.tape) {
-    throw error(400, 'Tape parameter is missing');
-  }
-
-  if (saneFilePath.endsWith('/')) {
-    await mkdir(saneFilePath, { recursive: true });
-    await getFileTree().refresh();
-    console.info(`Created directory at ${saneFilePath}`);
-    return {
-      name: newFilename,
-      path: getRelativePathInTape(saneFilePath),
-      type: 'dir',
-      childs: []
-    };
-  }
-
-  if (existsSync(saneFilePath)) {
-    return invalid(invalid.fileName('File already exists'));
-  }
-  try {
-    // Créer le dossier s'il n'existe pas
-    await mkdir(dirname(saneFilePath), { recursive: true });
-    // Créer le fichier
-    await writeFile(saneFilePath, '', 'utf-8');
-    console.info(`Created file at ${saneFilePath}`);
-  } catch (err) {
-    console.error('Error creating file:', err);
-    return invalid(invalid.fileName('Error creating file'));
-  }
-
-  await getFileTree().refresh();
-
-  const io = getServerSocket();
-  io.to(TAPE_PREFIX + params.tape)
-    .emit('remoteModification', []); // will refresh client file tree
-
-  return {
-    name: newFilename,
-    path: getRelativePathInTape(saneFilePath),
-    type: 'file',
-    content: '',
-    childs: null,
-    lastKnownTimestamp: Date.now()
-  };
-});
-
-export const createFileCmd = command(z.object({
-  filePath: z.string()
-}), async ({ filePath: fileName }): Promise<FileEntry> => {
-  // 1. Sanitize and validate file name
-  const filePath = getValidPathInTape(fileName);
-
-  // 2. Check if file already exists
-  if (existsSync(filePath)) {
-    throw new Error('File already exists');
-  }
-
-  // 3. Create necessary directories (supports nested paths like "folder/subfolder/file.txt")
-  await mkdir(dirname(filePath), { recursive: true });
-
-  // TODO: change "writeFile" for a safer stream-based method
-  // If two request arrive at the same time, data can be lost
-  // 4. Create the file
-  await writeFile(filePath, '', 'utf-8');
-  console.log(`Creating file at ${filePath}`);
-
-  // 5. Refresh the file tree
-  await getFileTree().refresh();
-
-  return {
-    name: path.basename(filePath),
-    path: getRelativePathInTape(filePath),
-    type: 'file',
-    content: '',
-    childs: null,
-    lastKnownTimestamp: Date.now()
-  };
-});
-
 export const createFileIfNotExists = command(z.object({
   filePath: z.string()
 }), async ({ filePath: fileName }): Promise<FileEntry> => {
@@ -193,14 +103,6 @@ export const createFileIfNotExists = command(z.object({
     childs: null,
     lastKnownTimestamp: Date.now()
   };
-});
-
-export const createFolder = command(z.object({
-  folderName: z.string()
-}), async ({ folderName }): Promise<void> => {
-  const folderPath = getValidPathInTape(folderName);
-  await mkdir(folderPath, { recursive: true });
-  console.log(`Creating folder at ${folderPath}`);
 });
 
 export const writeFileContent = command(z.object({
