@@ -43,20 +43,6 @@ export default defineConfig(
   js.configs.recommended,
   ...svelte.configs.recommended,
   {
-    files: ['**/*.svelte'],
-    rules: {
-      'svelte/indent': ['error', {
-        indent: '2',
-        alignAttributesVertically: true
-      }],
-      indent: 'off',
-      '@stylistic/indent': 'off',
-      '@stylistic/indent-attributes': 'off',
-      '@stylistic/indent-children': 'off',
-      '@stylistic/indent-binary-ops': 'off'
-    }
-  },
-  {
     languageOptions: {
       globals: { ...globals.browser, ...globals.node }
     },
